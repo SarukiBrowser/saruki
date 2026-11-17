@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Saruki brand: S-Line in Pointer Pink. The phone app is the inverse of the TV icon: pink mark on black. -->
+    <color name="saruki_pink">#FF5CA8</color>
+    <color name="saruki_black">#111114</color>
+</resources>

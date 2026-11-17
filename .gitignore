@@ -1,0 +1,10 @@
+.gradle/
+build/
+app/build/
+local.properties
+out/
+saruki.jks
+**/build/
+*.jks
+*.keystore
+*.p12

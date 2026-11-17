@@ -1,0 +1,12 @@
+Saruki includes or uses the following third-party work:
+
+- TV Overlay Suite (MIT License, https://github.com/TVOVERLAYSUITE/tv-overlay-suite): the phone link protocols in
+  shared/ (TypeProto, PadProto, CamProto, CamRelay, Pairing), the TV-side WebSocket server (WsServer, from InkServer)
+  and most of the Saruki Remote phone app (remote/) are adapted from it.
+- AndroidX Media3 / ExoPlayer (Apache License 2.0).
+- NextLib media3 extension with FFmpeg decoders (GNU GPL v3.0) - https://github.com/anilbeesetti/nextlib
+- AndroidX WebKit (Apache License 2.0).
+- ZXing core, QR codes (Apache License 2.0).
+- StevenBlack/hosts ad blocking list (MIT License; includes AdAway data under CC BY 3.0).
+- Archivo Black font (SIL Open Font License 1.1).
+- Material Symbols icons by Google (Apache License 2.0), as vector drawables from the @material-symbols/svg-400 package.

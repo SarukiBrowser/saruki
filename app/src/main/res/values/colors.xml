@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- v1.6 brand: S-Line in Pointer Pink -->
+    <color name="saruki_pink">#FF5CA8</color>
+    <color name="saruki_black">#111111</color>
+    <!-- v1.8.1: launcher icon and TV banner (his lockup: plum mark on banner pink) -->
+    <color name="saruki_icon_bg">#E8579B</color>
+</resources>
