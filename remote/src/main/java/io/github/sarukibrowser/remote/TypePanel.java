@@ -30,7 +30,7 @@ final class TypePanel extends LinearLayout {
         void closePanel();
     }
 
-    static final int BG = 0xFF1B202A, FIELD = 0xFF252B38, TEXT = 0xFFE9ECF2, MUTED = 0xFF8A93A3, ACCENT = 0xFFFF5CA8;
+    static final int BG = Look.CARD, FIELD = Look.FIELD, TEXT = Look.TEXT, MUTED = Look.MUTED, ACCENT = Look.ACCENT;   // v1.0.2
 
     private final Host host;
     private final Store store;
@@ -51,8 +51,8 @@ final class TypePanel extends LinearLayout {
         setOrientation(VERTICAL);
         GradientDrawable bg = new GradientDrawable();
         bg.setColor(BG);
-        bg.setCornerRadius(20 * d);
-        bg.setStroke(px(1), 0x33FFFFFF);
+        bg.setCornerRadius(Look.R_LG * d);
+        bg.setStroke(Math.max(1, px(1)), Look.LINE_STRONG);
         setBackground(bg);
         setPadding(px(14), px(10), px(10), px(12));
         setElevation(12 * d);
@@ -62,6 +62,8 @@ final class TypePanel extends LinearLayout {
         title = new TextView(c);
         title.setTextColor(MUTED);
         title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
+        Look.init(c);
+        title.setTypeface(Look.MEDIUM);
         title.setSingleLine(true);
         title.setEllipsize(android.text.TextUtils.TruncateAt.END);
         top.addView(title, new LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f));
@@ -80,9 +82,11 @@ final class TypePanel extends LinearLayout {
         edit.setTextColor(TEXT);
         edit.setHintTextColor(MUTED);
         edit.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
+        edit.setTypeface(Look.REGULAR);
         GradientDrawable fb = new GradientDrawable();
         fb.setColor(FIELD);
-        fb.setCornerRadius(14 * d);
+        fb.setCornerRadius(Look.R_MD * d);
+        fb.setStroke(Math.max(1, px(1)), Look.LINE);
         edit.setBackground(fb);
         edit.setPadding(px(14), px(10), px(14), px(10));
         edit.setMaxLines(4);
@@ -102,15 +106,17 @@ final class TypePanel extends LinearLayout {
         TextView t = new TextView(getContext());
         t.setText(s);
         t.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-        t.setTypeface(Typeface.DEFAULT_BOLD);
-        t.setTextColor(accent ? 0xFF151820 : TEXT);
+        t.setTypeface(Look.SEMIBOLD);
+        t.setTextColor(accent ? Look.ON_ACCENT : TEXT);
         t.setGravity(Gravity.CENTER);
-        t.setPadding(px(14), px(7), px(14), px(7));
-        t.setMinWidth(px(40));
+        t.setPadding(px(16), px(9), px(16), px(9));
+        t.setMinWidth(px(44));
+        t.setMinHeight(px(40));
         GradientDrawable g = new GradientDrawable();
         g.setColor(accent ? ACCENT : FIELD);
-        g.setCornerRadius(999);
-        t.setBackground(g);
+        g.setCornerRadius(Look.R_SM * d);
+        t.setBackground(Look.pressable(getContext(), g, Look.R_SM));
+        t.setClickable(true);
         return t;
     }
 

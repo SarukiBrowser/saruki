@@ -32,8 +32,13 @@ final class TopBar {
         view = new LinearLayout(a);
         view.setOrientation(LinearLayout.HORIZONTAL);
         view.setGravity(Gravity.CENTER_VERTICAL);
-        view.setBackgroundColor(0xF2111318);
-        view.setPadding(Ui.dp(10), Ui.dp(4), Ui.dp(12), Ui.dp(4));
+        // v1.8.3: the window's title bar: chrome grey with one hairline under it
+        android.graphics.drawable.LayerDrawable bg = new android.graphics.drawable.LayerDrawable(new Drawable[]{
+                new android.graphics.drawable.ColorDrawable(Ui.CHROME), new android.graphics.drawable.ColorDrawable(Ui.LINE)});
+        bg.setLayerGravity(1, Gravity.BOTTOM | Gravity.FILL_HORIZONTAL);
+        bg.setLayerHeight(1, Math.max(1, Ui.dp(0.5f)));
+        view.setBackground(bg);
+        view.setPadding(Ui.dp(8), Ui.dp(5), Ui.dp(8), Ui.dp(5));
         back = button(R.drawable.ic_arrow_back, "Back");
         fwd = button(R.drawable.ic_arrow_forward, "Forward");
         stop = button(R.drawable.ic_close, "Stop");
@@ -42,12 +47,12 @@ final class TopBar {
         addr.setSingleLine(true);
         addr.setEllipsize(TextUtils.TruncateAt.MIDDLE);
         addr.setGravity(Gravity.CENTER_VERTICAL);
-        addr.setPadding(Ui.dp(14), 0, Ui.dp(14), 0);
-        addr.setBackground(Ui.round(0xFF1F232C, 14, 0x22FFFFFF, 1));
+        addr.setPadding(Ui.dp(12), 0, Ui.dp(12), 0);
+        addr.setBackground(addrBg(false));
         addr.setContentDescription("Address: search or type a web address");
         addr.setCompoundDrawablePadding(Ui.dp(6));
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, Ui.dp(30), 1);
-        lp.leftMargin = Ui.dp(8);
+        lp.leftMargin = Ui.dp(6);
         view.addView(addr, lp);
         back.setOnClickListener(v -> { if (a.web != null && a.web.canGoBack()) a.web.goBack(); });
         fwd.setOnClickListener(v -> { if (a.web != null && a.web.canGoForward()) a.web.goForward(); });
@@ -62,14 +67,23 @@ final class TopBar {
         t.setImageResource(iconRes);
         t.setColorFilter(Ui.TEXT);
         t.setContentDescription(label);
-        t.setBackground(Ui.round(0x00000000, 10, 0x00000000, 0));
+        t.setBackground(btnBg(false));
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(Ui.dp(34), Ui.dp(30));
         lp.rightMargin = Ui.dp(2);
         view.addView(t, lp);
-        // the vector is drawn on a 24dp grid; shown at 20dp
-        t.setPadding(Ui.dp(7), Ui.dp(5), Ui.dp(7), Ui.dp(5));
+        // the vector is drawn on a 24dp grid; v1.8.3: shown at 18dp
+        t.setPadding(Ui.dp(8), Ui.dp(6), Ui.dp(8), Ui.dp(6));
         t.setScaleType(ImageView.ScaleType.FIT_CENTER);
         return t;
+    }
+
+    /** v1.8.3: the address field: a quiet well at rest, the standard focus look under the pointer. */
+    private static Drawable addrBg(boolean on) {
+        return on ? Ui.round(Ui.CARD_FOCUS, Ui.R_SM, Ui.ACCENT, 1.5f) : Ui.round(Ui.CARD, Ui.R_SM, 0, 0);
+    }
+
+    private static Drawable btnBg(boolean on) {
+        return on ? Ui.round(Ui.CARD_FOCUS, Ui.R_SM, Ui.ACCENT, 1.5f) : Ui.round(0x00000000, Ui.R_SM, 0, 0);
     }
 
     static FrameLayout.LayoutParams params() {
@@ -97,7 +111,7 @@ final class TopBar {
         if (secure && !shown.isEmpty()) {
             if (lock == null) {
                 lock = a.getDrawable(R.drawable.ic_lock).mutate();
-                lock.setBounds(0, 0, Ui.dp(14), Ui.dp(14));
+                lock.setBounds(0, 0, Ui.dp(13), Ui.dp(13));
                 lock.setTint(Ui.DIM);
             }
             addr.setCompoundDrawables(lock, null, null, null);
@@ -105,7 +119,7 @@ final class TopBar {
     }
 
     private static void dim(View v, boolean on) {
-        v.setAlpha(on ? 1f : 0.3f);
+        v.setAlpha(on ? 1f : 0.28f);
         v.setEnabled(on);
     }
 
@@ -143,8 +157,7 @@ final class TopBar {
         for (int i = 0; i < view.getChildCount(); i++) {
             View c = view.getChildAt(i);
             boolean on = c == h && c.isEnabled();
-            if (c == addr) c.setBackground(Ui.round(on ? 0xFF2A2F3A : 0xFF1F232C, 14, on ? 0x88FF5CA8 : 0x22FFFFFF, 1));
-            else c.setBackground(Ui.round(on ? 0x33FF5CA8 : 0x00000000, 10, 0x00000000, 0));
+            c.setBackground(c == addr ? addrBg(on) : btnBg(on));
         }
     }
 

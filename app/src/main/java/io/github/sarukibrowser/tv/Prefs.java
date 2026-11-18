@@ -48,6 +48,7 @@ final class Prefs {
     static boolean dark() { return flag("dark", false); }
     static boolean jumpMode() { return flag("jump", false); }
     static int overscan() { return p.getInt("overscan", 0); }                 // percent of each edge
+    static boolean frame() { return flag("frame", true); }                  // v1.8.3: the thin window frame
     static void setOverscan(int v) { p.edit().putInt("overscan", v).apply(); }
 
     // ---- video calls (v1.5) ----

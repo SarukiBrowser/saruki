@@ -96,7 +96,7 @@ public class PlayerActivity extends Activity {
         center = Ui.text(this, "", Ui.TITLE, Ui.TEXT, true);
         center.setGravity(Gravity.CENTER);
         center.setPadding(Ui.dp(28), Ui.dp(16), Ui.dp(28), Ui.dp(16));
-        center.setBackground(Ui.round(0xCC000000, 16, 0, 0));
+        center.setBackground(Ui.surface(Ui.R_LG));
         root.addView(center, new FrameLayout.LayoutParams(-2, -2, Gravity.CENTER));
         center.setText("Loading…");
 
@@ -105,9 +105,11 @@ public class PlayerActivity extends Activity {
         menu = new LinearLayout(this);
         menu.setOrientation(LinearLayout.VERTICAL);
         menu.setPadding(Ui.dp(20), Ui.dp(20), Ui.dp(20), Ui.dp(20));
-        menu.setBackground(Ui.round(Ui.PANEL, 0, 0, 0));
+        menu.setBackground(Ui.surface(Ui.R_LG));
         menu.setVisibility(View.GONE);
-        root.addView(menu, new FrameLayout.LayoutParams(Ui.dp(380), -1, Gravity.END));
+        FrameLayout.LayoutParams mlp = new FrameLayout.LayoutParams(Ui.dp(380), -1, Gravity.END);
+        mlp.setMargins(0, Ui.dp(16), Ui.dp(16), Ui.dp(16));
+        root.addView(menu, mlp);
         setContentView(root);
 
         cookieHdr = cookie;
@@ -188,7 +190,7 @@ public class PlayerActivity extends Activity {
     private void buildToast() {
         toast = Ui.text(this, "", Ui.BODY, Ui.TEXT, false);
         toast.setPadding(Ui.dp(16), Ui.dp(10), Ui.dp(16), Ui.dp(10));
-        toast.setBackground(Ui.round(0xDD1B212B, 20, 0, 0));
+        toast.setBackground(Ui.surface(Ui.R_MD));
         toast.setAlpha(0);
         FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(-2, -2, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
         lp.topMargin = Ui.dp(30);

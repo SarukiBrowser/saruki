@@ -27,7 +27,7 @@ public class TypeActivity extends Activity implements TypePanel.Host {
     @Override
     protected void onCreate(Bundle b) {
         super.onCreate(b);
-        getWindow().setBackgroundDrawable(new ColorDrawable(0x99000000));
+        getWindow().setBackgroundDrawable(new ColorDrawable(0xA6000000));
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE
                 | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         float d = getResources().getDisplayMetrics().density;
@@ -39,8 +39,10 @@ public class TypeActivity extends Activity implements TypePanel.Host {
         panel.setClickable(true);
         col.addView(panel);
         waiting = new TextView(this);
-        waiting.setTextColor(Color.WHITE);
+        waiting.setTextColor(Look.TEXT);
         waiting.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
+        Look.init(this);
+        waiting.setTypeface(Look.REGULAR);
         waiting.setGravity(Gravity.CENTER);
         waiting.setPadding(0, Math.round(16 * d), 0, 0);
         col.addView(waiting);

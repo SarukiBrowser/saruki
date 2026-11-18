@@ -10,11 +10,11 @@ android {
         applicationId 'io.github.sarukibrowser.tv'
         minSdk 26
         targetSdk 34
-        versionCode 13
-        versionName '1.8.2'
+        versionCode 15
+        versionName '1.8.4'
         ndk { abiFilters.addAll(abiList) }
         // v1.7: version of the Saruki Remote phone app bundled inside (served to phones from the TV)
-        buildConfigField 'String', 'REMOTE_VERSION', '"1.0.1"'
+        buildConfigField 'String', 'REMOTE_VERSION', '"1.0.2"'
     }
     buildFeatures { buildConfig true }
     // v1.7: the Saruki Remote protocols (shared with the phone app) and the phone app itself, bundled as an asset

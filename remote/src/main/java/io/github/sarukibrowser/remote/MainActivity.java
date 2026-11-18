@@ -29,8 +29,9 @@ import java.util.Locale;
 /** Setup and status: pair with Saruki on the TV, grant the two permissions, open the trackpad / typing / camera, settings. */
 public class MainActivity extends Activity {
 
-    private static final int BG = 0xFF0F1218, CARD = 0xFF1B202A, FIELD = 0xFF252B38, TEXT = 0xFFE9ECF2,
-            MUTED = 0xFF8A93A3, ACCENT = 0xFFFF5CA8, GOOD = 0xFF45D483, WARN = 0xFFFF8A5F;
+    // v1.0.2: tokens from Look (the "Window" system shared with Saruki on the TV)
+    private static final int BG = Look.BG, CARD = Look.CARD, FIELD = Look.FIELD, TEXT = Look.TEXT,
+            MUTED = Look.MUTED, ACCENT = Look.ACCENT, GOOD = Look.GOOD, WARN = Look.WARN;
     private static final String CODE_CHARS = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
 
     private Store store;
@@ -114,73 +115,95 @@ public class MainActivity extends Activity {
     // ---------------------------------------------------------------- layout
 
     private void build() {
+        Look.init(this);
         ScrollView sv = new ScrollView(this);
         sv.setBackgroundColor(BG);
         sv.setFillViewport(true);
+        sv.setVerticalScrollBarEnabled(false);
         LinearLayout col = new LinearLayout(this);
         col.setOrientation(LinearLayout.VERTICAL);
-        col.setPadding(px(18), px(22), px(18), px(28));
+        col.setPadding(px(20), px(28), px(20), px(32));
         sv.addView(col);
 
-        TextView h = text("saruki remote", 28, ACCENT, true);
-        h.setTypeface(Typeface.create("sans-serif-black", Typeface.BOLD));
-        col.addView(h);
-        // v1.0.1: the slogan, with THE in bold
-        android.text.SpannableString subText = new android.text.SpannableString("Your phone as the trackpad, keyboard and camera for Saruki, THE tv browser.");
-        int theAt = subText.toString().indexOf("THE");
-        subText.setSpan(new android.text.style.StyleSpan(Typeface.BOLD), theAt, theAt + 3, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        TextView sub = text("", 15, MUTED, false);
-        sub.setText(subText);
-        sub.setPadding(0, px(4), 0, px(16));
-        col.addView(sub);
+        // v1.0.2: header: the mark, the name, the slogan (THE in bold)
+        LinearLayout head = new LinearLayout(this);
+        head.setGravity(Gravity.CENTER_VERTICAL);
+        android.widget.ImageView mark = new android.widget.ImageView(this);
+        mark.setImageResource(R.mipmap.ic_launcher);
+        head.addView(mark, new LinearLayout.LayoutParams(px(40), px(40)));
+        LinearLayout names = new LinearLayout(this);
+        names.setOrientation(LinearLayout.VERTICAL);
+        names.setPadding(px(12), 0, 0, 0);
+        names.addView(Look.text(this, "Saruki Remote", 24, TEXT, 600));
+        android.text.SpannableString subText = new android.text.SpannableString("THE tv browser, on your phone");
+        Object bold = Build.VERSION.SDK_INT >= 28 ? new android.text.style.TypefaceSpan(Look.SEMIBOLD)
+                : new android.text.style.StyleSpan(Typeface.BOLD);
+        subText.setSpan(bold, 0, 3, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        TextView sub = Look.text(this, subText, 14, MUTED, 400);
+        sub.setPadding(0, px(2), 0, 0);
+        names.addView(sub);
+        head.addView(names, new LinearLayout.LayoutParams(0, -2, 1));
+        col.addView(head);
+        TextView about = text("Your phone as the trackpad, keyboard and camera for Saruki on the TV.", 14, MUTED, false);
+        about.setPadding(px(2), px(16), 0, 0);
+        about.setLineSpacing(px(3), 1);
+        col.addView(about);
 
         // status
+        col.addView(Look.label(this, "TV"));
         LinearLayout st = card();
         LinearLayout row = new LinearLayout(this);
         row.setGravity(Gravity.CENTER_VERTICAL);
-        statusDot = text("●", 18, MUTED, true);
+        statusDot = text("●", 12, MUTED, false);
         statusDot.setPadding(0, 0, px(10), 0);
         row.addView(statusDot);
-        statusText = text("", 18, TEXT, true);
-        row.addView(statusText);
+        statusText = text("", 17, TEXT, true);
+        row.addView(statusText, new LinearLayout.LayoutParams(0, -2, 1));
         st.addView(row);
         statusSub = text("", 14, MUTED, false);
-        statusSub.setPadding(0, px(4), 0, 0);
+        statusSub.setPadding(px(22), px(6), 0, 0);
+        statusSub.setLineSpacing(px(2), 1);
         st.addView(statusSub);
         col.addView(st);
 
         // pairing
-        pairCard = card();
-        pairCard.addView(text("Pair with your TV", 18, TEXT, true));
+        pairCard = section("Pair");
+        LinearLayout pc = card();
+        pc.addView(text("Pair with your TV", 17, TEXT, true));
         TextView ph = text("On the TV, open Saruki → MENU → Phone remote. Scan its QR code with this phone's camera and tap "
                 + "“Open Saruki Remote”. Or pick your TV below and type the code shown there.", 14, MUTED, false);
-        ph.setPadding(0, px(4), 0, px(10));
-        pairCard.addView(ph);
-        scanStatus = text("", 14, MUTED, false);
-        pairCard.addView(scanStatus);
+        ph.setPadding(0, px(6), 0, px(12));
+        ph.setLineSpacing(px(3), 1);
+        pc.addView(ph);
+        scanStatus = text("", 13, MUTED, false);
+        pc.addView(scanStatus);
         tvList = new LinearLayout(this);
         tvList.setOrientation(LinearLayout.VERTICAL);
-        pairCard.addView(tvList);
+        pc.addView(tvList);
         hostEdit = field("TV address, e.g. 192.168.1.23:8790", InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
-        pairCard.addView(hostEdit);
+        pc.addView(hostEdit);
         codeEdit = field("Pairing code (6 characters)", InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS
                 | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
         codeEdit.setFilters(new InputFilter[]{new InputFilter.LengthFilter(7), new InputFilter.AllCaps()});
-        pairCard.addView(codeEdit);
+        codeEdit.setLetterSpacing(0.12f);
+        pc.addView(codeEdit);
         TextView go = button("Pair", true);
         go.setOnClickListener(v -> pair(hostEdit.getText().toString().trim(), codeEdit.getText().toString()));
-        pairCard.addView(go);
+        pc.addView(go);
         pairMsg = text("", 14, WARN, false);
         pairMsg.setPadding(0, px(8), 0, 0);
-        pairCard.addView(pairMsg);
+        pc.addView(pairMsg);
+        pairCard.addView(pc);
         col.addView(pairCard);
 
         // permissions
-        permCard = card();
-        permCard.addView(text("Two permissions", 18, TEXT, true));
+        permCard = section("Permissions");
+        LinearLayout pm = card();
+        pm.addView(text("Two permissions", 17, TEXT, true));
         TextView pe = text("So the typing bar can pop up over any app the moment a text box opens on the TV.", 14, MUTED, false);
-        pe.setPadding(0, px(4), 0, px(6));
-        permCard.addView(pe);
+        pe.setPadding(0, px(6), 0, px(4));
+        pe.setLineSpacing(px(3), 1);
+        pm.addView(pe);
         permOverlay = button("Allow “Display over other apps”", true);
         permOverlay.setOnClickListener(v -> {
             try {
@@ -189,57 +212,74 @@ public class MainActivity extends Activity {
                 startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION));
             }
         });
-        permCard.addView(permOverlay);
+        pm.addView(permOverlay);
         permNotes = button("Allow notifications", false);
         permNotes.setOnClickListener(v -> {
             if (Build.VERSION.SDK_INT >= 33) requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1);
         });
-        permCard.addView(permNotes);
+        pm.addView(permNotes);
+        permCard.addView(pm);
         col.addView(permCard);
 
-        // ready: actions + settings
-        readyCard = card();
-        TextView padBtn = button("Trackpad", true);
-        padBtn.setOnClickListener(v -> startActivity(new Intent(this, PadActivity.class)));
-        readyCard.addView(padBtn);
-        TextView type = button("Type in Saruki now", true);
-        type.setOnClickListener(v -> startActivity(new Intent(this, TypeActivity.class).putExtra(TypeActivity.EXTRA_WANT, true)));
-        readyCard.addView(type);
-        TextView camBtn = button("Phone camera for video calls", false);
-        camBtn.setOnClickListener(v -> startActivity(new Intent(this, CamActivity.class)));
-        readyCard.addView(camBtn);
+        // ready: actions, then settings, then this phone
+        readyCard = new LinearLayout(this);
+        readyCard.setOrientation(LinearLayout.VERTICAL);
+        readyCard.addView(Look.label(this, "Control"));
+        LinearLayout acts = new LinearLayout(this);
+        acts.addView(tile(R.drawable.ic_trackpad_input, "Trackpad", true,
+                v -> startActivity(new Intent(this, PadActivity.class))), tileLp(0));
+        acts.addView(tile(R.drawable.ic_keyboard, "Type", false,
+                v -> startActivity(new Intent(this, TypeActivity.class).putExtra(TypeActivity.EXTRA_WANT, true))), tileLp(10));
+        acts.addView(tile(R.drawable.ic_videocam, "Camera", false,
+                v -> startActivity(new Intent(this, CamActivity.class))), tileLp(10));
+        readyCard.addView(acts);
+
+        readyCard.addView(Look.label(this, "Settings"));
+        LinearLayout set = card();
+        set.setPadding(px(16), px(4), px(16), px(16));
         autoSw = toggle("Pop up when you click a text box in Saruki", store.autoPop());
         autoSw.setOnCheckedChangeListener((bt, on) -> store.setAutoPop(on));
-        readyCard.addView(autoSw);
+        set.addView(autoSw);
+        set.addView(Look.divider(this));
         enterSw = toggle("Close after Search / Go / Enter", store.closeOnEnter());
         enterSw.setOnCheckedChangeListener((bt, on) -> store.setCloseOnEnter(on));
-        readyCard.addView(enterSw);
+        set.addView(enterSw);
+        set.addView(Look.divider(this));
         padSw = toggle("Open the trackpad when Saruki opens on the TV", store.padAutoPop());
         padSw.setOnCheckedChangeListener((bt, on) -> store.setPadAutoPop(on));
-        readyCard.addView(padSw);
+        set.addView(padSw);
+        set.addView(Look.divider(this));
         speedLabel = text("", 15, TEXT, false);
-        speedLabel.setPadding(0, px(14), 0, px(2));
-        readyCard.addView(speedLabel);
+        speedLabel.setPadding(0, px(16), 0, px(4));
+        set.addView(speedLabel);
         SeekBar speed = new SeekBar(this);
         speed.setMax(4);
         speed.setProgress(store.padSpeed() - 1);
         speed.setProgressTintList(ColorStateList.valueOf(ACCENT));
+        speed.setProgressBackgroundTintList(ColorStateList.valueOf(0x40FFFFFF));
         speed.setThumbTintList(ColorStateList.valueOf(ACCENT));
         speed.setOnSeekBarChangeListener(new SpeedListener(this));
-        readyCard.addView(speed);
+        set.addView(speed);
         showSpeed();
+        readyCard.addView(set);
         TextView tip = text("Tip: add the “Type on TV” tile to Quick Settings (swipe down twice, tap the pencil) "
                 + "to start typing from anywhere. With no text box open, typing goes to Saruki's address bar: "
                 + "type a site or a search. The connection notification has Type on TV and Trackpad buttons too.", 13, MUTED, false);
-        tip.setPadding(0, px(10), 0, 0);
+        tip.setPadding(px(4), px(12), px(4), 0);
+        tip.setLineSpacing(px(3), 1);
         readyCard.addView(tip);
+
+        readyCard.addView(Look.label(this, "This phone"));
+        LinearLayout mine = card();
+        mine.setPadding(px(16), px(6), px(16), px(16));
         TextView forgetCam = button("Forget camera permissions", false);
         forgetCam.setOnClickListener(v -> {
             store.clearCamAllowed();
             android.widget.Toast.makeText(this, "Saruki will ask again before using the camera", android.widget.Toast.LENGTH_SHORT).show();
         });
-        readyCard.addView(forgetCam);
+        mine.addView(forgetCam);
         TextView forget = button("Forget this TV", false);
+        forget.setTextColor(WARN);
         forget.setOnClickListener(v -> {
             // v1.0.1: one tap no longer unpairs. Ask first; only "Forget" does it.
             String tv = store.tvName().isEmpty() ? "this TV" : store.tvName();
@@ -255,11 +295,13 @@ public class MainActivity extends Activity {
                     })
                     .show();
         });
-        readyCard.addView(forget);
+        mine.addView(forget);
+        readyCard.addView(mine);
         col.addView(readyCard);
 
         TextView ver = text("Version " + versionName() + "  ·  github.com/SarukiBrowser/saruki", 12, MUTED, false);
-        ver.setPadding(0, px(18), 0, 0);
+        ver.setPadding(0, px(28), 0, 0);
+        ver.setGravity(Gravity.CENTER_HORIZONTAL);
         col.addView(ver);
         setContentView(sv);
     }
@@ -359,7 +401,7 @@ public class MainActivity extends Activity {
                 ? "No TV found automatically. Is Saruki open on the TV? Or type the TV address shown under the QR code."
                 : "Found on this Wi-Fi — tap yours, then type the code:");
         for (Finder.Tv t : tvs) {
-            TextView b = button("📺  " + t.name + "   " + t.host, false);
+            TextView b = button(t.name + "   ·   " + t.host, false);
             b.setOnClickListener(v -> pick(t));
             tvList.addView(b);
         }
@@ -378,42 +420,50 @@ public class MainActivity extends Activity {
     private int px(int dp) { return Math.round(dp * d); }
 
     private TextView text(String s, int sp, int color, boolean bold) {
-        TextView t = new TextView(this);
-        t.setText(s);
-        t.setTextSize(TypedValue.COMPLEX_UNIT_SP, sp);
-        t.setTextColor(color);
-        if (bold) t.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
+        TextView t = Look.text(this, s, sp, color, bold ? 600 : 400);
         return t;
     }
 
     private LinearLayout card() {
-        LinearLayout c = new LinearLayout(this);
-        c.setOrientation(LinearLayout.VERTICAL);
-        GradientDrawable g = new GradientDrawable();
-        g.setColor(CARD);
-        g.setCornerRadius(20 * d);
-        c.setBackground(g);
-        c.setPadding(px(16), px(16), px(16), px(16));
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(-1, -2);
-        lp.bottomMargin = px(12);
-        c.setLayoutParams(lp);
+        LinearLayout c = Look.card(this);
+        c.setLayoutParams(new LinearLayout.LayoutParams(-1, -2));
         return c;
     }
 
-    private TextView button(String s, boolean primary) {
-        TextView t = text(s, 16, primary ? 0xFF151820 : TEXT, true);
+    /** v1.0.2: a block that shows or hides as one: its section label and its card. */
+    private LinearLayout section(String label) {
+        LinearLayout l = new LinearLayout(this);
+        l.setOrientation(LinearLayout.VERTICAL);
+        l.addView(Look.label(this, label));
+        return l;
+    }
+
+    private TextView button(String s, boolean primary) { return Look.button(this, s, primary); }
+
+    /** v1.0.2: a square action tile: icon over a label. The main one is pink. */
+    private LinearLayout tile(int icon, String label, boolean primary, View.OnClickListener l) {
+        LinearLayout t = new LinearLayout(this);
+        t.setOrientation(LinearLayout.VERTICAL);
         t.setGravity(Gravity.CENTER);
-        t.setPadding(px(14), px(13), px(14), px(13));
-        GradientDrawable g = new GradientDrawable();
-        g.setColor(primary ? ACCENT : FIELD);
-        g.setCornerRadius(14 * d);
-        t.setBackground(g);
+        t.setPadding(0, px(18), 0, px(16));
+        android.graphics.drawable.Drawable rest = primary ? Look.round(this, ACCENT, Look.R_LG, 0, 0) : Look.round(this, CARD, Look.R_LG, Look.LINE, 1);
+        t.setBackground(Look.pressable(this, rest, Look.R_LG));
         t.setClickable(true);
         t.setFocusable(true);
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(-1, -2);
-        lp.topMargin = px(8);
-        t.setLayoutParams(lp);
+        t.setContentDescription(label);
+        t.addView(Look.icon(this, icon, primary ? Look.ON_ACCENT : TEXT), new LinearLayout.LayoutParams(px(26), px(26)));
+        TextView tl = Look.text(this, label, 14, primary ? Look.ON_ACCENT : TEXT, 600);
+        tl.setPadding(0, px(10), 0, 0);
+        tl.setGravity(Gravity.CENTER);
+        t.addView(tl);
+        t.setOnClickListener(l);
         return t;
+    }
+
+    private LinearLayout.LayoutParams tileLp(int leftDp) {
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, -2, 1);
+        lp.leftMargin = px(leftDp);
+        return lp;
     }
 
     private EditText field(String hint, int type) {
@@ -423,14 +473,16 @@ public class MainActivity extends Activity {
         e.setSingleLine(true);
         e.setTextColor(TEXT);
         e.setHintTextColor(MUTED);
-        e.setTextSize(TypedValue.COMPLEX_UNIT_SP, 17);
-        GradientDrawable g = new GradientDrawable();
-        g.setColor(FIELD);
-        g.setCornerRadius(14 * d);
-        e.setBackground(g);
+        e.setTypeface(Look.REGULAR);
+        e.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+        android.graphics.drawable.StateListDrawable sl = new android.graphics.drawable.StateListDrawable();
+        sl.addState(new int[]{android.R.attr.state_focused}, Look.round(this, FIELD, Look.R_MD, ACCENT, 1.5f));
+        sl.addState(new int[]{}, Look.round(this, FIELD, Look.R_MD, Look.LINE, 1));
+        e.setBackground(sl);
+        e.setMinHeight(px(48));
         e.setPadding(px(14), px(12), px(14), px(12));
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(-1, -2);
-        lp.topMargin = px(8);
+        lp.topMargin = px(10);
         e.setLayoutParams(lp);
         return e;
     }
@@ -439,9 +491,15 @@ public class MainActivity extends Activity {
         Switch s = new Switch(this);
         s.setText(label);
         s.setTextColor(TEXT);
+        s.setTypeface(Look.REGULAR);
         s.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
         s.setChecked(on);
-        s.setPadding(0, px(14), 0, px(4));
+        s.setMinHeight(px(56));
+        s.setPadding(0, px(12), 0, px(12));
+        s.setSwitchPadding(px(16));
+        int[][] states = {{android.R.attr.state_checked}, {}};
+        s.setThumbTintList(new ColorStateList(states, new int[]{ACCENT, 0xFFB9BCC3}));
+        s.setTrackTintList(new ColorStateList(states, new int[]{0x80FF5CA8, 0x33FFFFFF}));
         return s;
     }
 

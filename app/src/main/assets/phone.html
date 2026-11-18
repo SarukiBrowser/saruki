@@ -6,26 +6,27 @@
 <meta name="theme-color" content="#0e1116">
 <title>Saruki remote</title>
 <style>
-  :root { --bg:#0e1116; --card:#1b212b; --line:#2b3647; --acc:#ff5ca8; --txt:#f2f5f9; --dim:#9aa6b8; }
+  /* v1.8.3: the "Window" look shared with Saruki on the TV and Saruki Remote */
+  :root { --bg:#0b0c0e; --card:#131418; --line:rgba(255,255,255,.12); --acc:#ff5ca8; --txt:#ecedef; --dim:#8e929b; }
   * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  html,body { margin:0; height:100%; background:var(--bg); color:var(--txt); font:16px/1.3 system-ui,-apple-system,Roboto,sans-serif; }
+  html,body { margin:0; height:100%; background:var(--bg); color:var(--txt); font:16px/1.35 Inter,system-ui,-apple-system,Roboto,sans-serif; -webkit-font-smoothing:antialiased; }
   body { display:flex; flex-direction:column; padding:12px; gap:10px; overscroll-behavior:none; }
   header { display:flex; align-items:center; justify-content:space-between; }
-  header b { font-size:18px; } header b span { color:var(--acc); }
+  header b { font-size:18px; font-weight:600; letter-spacing:-.2px; } header b span { color:var(--acc); }
   #st { font-size:13px; color:var(--dim); }
-  #st.ok::before { content:'● '; color:#66bb6a; } #st.bad::before { content:'● '; color:#ef5350; }
+  #st.ok::before { content:'● '; color:#5fd38d; } #st.bad::before { content:'● '; color:#f0a267; }
   .row { display:flex; gap:8px; }
   textarea { flex:1; min-height:52px; max-height:120px; resize:none; background:var(--card); color:var(--txt); border:1px solid var(--line);
     border-radius:12px; padding:12px; font-size:17px; }
   button { background:var(--card); color:var(--txt); border:1px solid var(--line); border-radius:12px; padding:12px 10px; font-size:15px; flex:1; }
-  button:active { background:#2b3647; border-color:var(--acc); }
-  button.p { background:var(--acc); color:#111111; border-color:var(--acc); font-weight:600; }
-  #pad { flex:1; min-height:240px; border-radius:18px; background:radial-gradient(circle at 50% 40%, #1d2531, #141921); border:1px solid var(--line);
+  button:active { background:#1f2127; }
+  button.p { background:var(--acc); color:#1a0610; border-color:var(--acc); font-weight:600; }
+  #pad { flex:1; min-height:240px; border-radius:18px; background:var(--card); border:1px solid var(--line);
     touch-action:none; display:flex; align-items:center; justify-content:center; color:var(--dim); font-size:14px; text-align:center; user-select:none; position:relative; }
   #pad.on { border-color:var(--acc); }
   #pad small { position:absolute; bottom:10px; left:0; right:0; font-size:12px; opacity:.7; }
   .tabs { display:flex; gap:6px; } .tabs button { padding:9px 6px; font-size:14px; }
-  .tabs button.sel { border-color:var(--acc); color:var(--acc); }
+  .tabs button.sel { background:#1f2127; border-color:rgba(255,255,255,.28); color:var(--txt); font-weight:600; }
   .hide { display:none !important; }
 </style>
 </head>

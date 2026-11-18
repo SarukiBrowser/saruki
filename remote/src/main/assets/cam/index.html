@@ -5,18 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Phone camera</title>
 <style>
-  :root { --bg:#0F1218; --field:#252B38; --text:#E9ECF2; --muted:#8A93A3; --accent:#FF5CA8; --good:#45D483; --warn:#FF8A5F; }
+  /* v1.0.2: the "Window" look */
+  :root { --bg:#0B0C0E; --field:#1B1D22; --text:#ECEDEF; --muted:#8E929B; --accent:#FF5CA8; --good:#5FD38D; --warn:#F0A267; }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font: 15px/1.35 sans-serif; overflow: hidden; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font: 15px/1.4 Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased; overflow: hidden; }
   #wrap { display: flex; flex-direction: column; height: 100%; padding: 12px 12px 14px; gap: 10px; }
   #top { display: flex; align-items: center; gap: 10px; padding: 2px 6px; }
   #dot { width: 12px; height: 12px; border-radius: 50%; background: var(--muted); flex: none; }
-  #dot.live { background: var(--good); box-shadow: 0 0 0 4px rgba(69,212,131,.18); }
+  #dot.live { background: var(--good); box-shadow: 0 0 0 4px rgba(95,211,141,.18); }
   #dot.wait { background: var(--accent); }
   #dot.bad { background: var(--warn); }
   #title { font-size: 18px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   #sub { color: var(--muted); font-size: 13px; }
-  #stage { position: relative; flex: 1; border-radius: 22px; overflow: hidden; background: #1B202A; }
+  #stage { position: relative; flex: 1; border-radius: 18px; overflow: hidden; background: #131418; border: 1px solid rgba(255,255,255,.12); }
   video { width: 100%; height: 100%; object-fit: cover; display: block; }
   video.mirror { transform: scaleX(-1); }
   #idle { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -26,7 +27,7 @@
   .k { flex: 1; background: var(--field); color: var(--text); border: 0; border-radius: 14px; padding: 10px 0 9px;
        font: 600 13px sans-serif; display: flex; flex-direction: column; align-items: center; gap: 3px; }
   .k span { font-size: 19px; line-height: 1; }
-  .k.on { background: var(--accent); color: #15181E; }
+  .k.on { background: var(--accent); color: #1A0610; }
   .k.stop { background: #3A2326; color: #FFB4A6; }
   .k:disabled { opacity: .45; }
   #shade { position: fixed; inset: 0; background: #000; display: none; align-items: flex-end; justify-content: center;

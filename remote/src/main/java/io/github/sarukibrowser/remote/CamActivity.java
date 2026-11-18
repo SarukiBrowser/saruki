@@ -53,7 +53,7 @@ public class CamActivity extends Activity {
     static final String ORIGIN = "https://appassets.androidplatform.net";
     static final String PAGE = ORIGIN + "/cam/index.html";
 
-    private static final int BG = 0xFF0F1218, FIELD = 0xFF252B38, TEXT = 0xFFE9ECF2, MUTED = 0xFF8A93A3, ACCENT = 0xFFFF5CA8;
+    private static final int BG = Look.BG, FIELD = Look.FIELD, TEXT = Look.TEXT, MUTED = Look.MUTED, ACCENT = Look.ACCENT;   // v1.0.2
     private static final int REQ_PERMS = 7;
 
     private final Handler main = new Handler(Looper.getMainLooper());
@@ -328,15 +328,13 @@ public class CamActivity extends Activity {
         askCard = new LinearLayout(this);
         askCard.setOrientation(LinearLayout.VERTICAL);
         askCard.setPadding(px(22), px(22), px(22), px(18));
-        GradientDrawable g = new GradientDrawable();
-        g.setColor(0xFF1B202A);
-        g.setCornerRadius(22 * d);
-        g.setStroke(px(1), 0x55FF5CA8);
-        askCard.setBackground(g);
+        askCard.setBackground(Look.round(this, Look.CARD, Look.R_LG, Look.LINE_STRONG, 1));
+        askCard.setElevation(16 * d);
         TextView t = text("Use this phone as the TV's camera?", 19, TEXT, true);
         askCard.addView(t);
         askText = text("", 15, MUTED, false);
-        askText.setPadding(0, px(8), 0, px(16));
+        askText.setPadding(0, px(8), 0, px(18));
+        askText.setLineSpacing(px(3), 1);
         askCard.addView(askText);
         LinearLayout row = new LinearLayout(this);
         TextView no = button("Don't allow", false);
@@ -352,7 +350,8 @@ public class CamActivity extends Activity {
         askCard.addView(row);
         TextView note = text("Once allowed, Saruki can start the camera from the TV while this app is connected. "
                 + "\"Forget camera permissions\" in the app takes it back.", 12, MUTED, false);
-        note.setPadding(0, px(12), 0, 0);
+        note.setPadding(0, px(14), 0, 0);
+        note.setLineSpacing(px(2), 1);
         askCard.addView(note);
         askCard.setVisibility(View.GONE);
         askCard.setClickable(true);
@@ -364,14 +363,8 @@ public class CamActivity extends Activity {
     }
 
     private TextView button(String s, boolean primary) {
-        TextView t = text(s, 16, primary ? 0xFF15181E : TEXT, true);
-        t.setGravity(Gravity.CENTER);
-        t.setPadding(0, px(13), 0, px(13));
-        GradientDrawable g = new GradientDrawable();
-        g.setColor(primary ? ACCENT : FIELD);
-        g.setCornerRadius(14 * d);
-        t.setBackground(g);
-        t.setClickable(true);
+        TextView t = Look.button(this, s, primary);
+        t.setLayoutParams(null);
         return t;
     }
 
@@ -380,7 +373,8 @@ public class CamActivity extends Activity {
         t.setText(s);
         t.setTextSize(TypedValue.COMPLEX_UNIT_SP, sp);
         t.setTextColor(color);
-        if (bold) t.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
+        Look.init(this);
+        t.setTypeface(bold ? Look.SEMIBOLD : Look.REGULAR);
         return t;
     }
 

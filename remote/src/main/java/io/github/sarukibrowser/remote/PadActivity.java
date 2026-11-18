@@ -24,8 +24,8 @@ import io.github.sarukibrowser.link.PadProto;
 public class PadActivity extends Activity implements PadView.Host {
     static final String EXTRA_AUTO = "auto";
 
-    private static final int BG = 0xFF0F1218, FIELD = 0xFF252B38, TEXT = 0xFFE9ECF2, MUTED = 0xFF8A93A3,
-            ACCENT = 0xFFFF5CA8, GOOD = 0xFF45D483, WARN = 0xFFFF8A5F;
+    private static final int BG = Look.BG, FIELD = Look.FIELD, TEXT = Look.TEXT, MUTED = Look.MUTED,
+            ACCENT = Look.ACCENT, GOOD = Look.GOOD, WARN = Look.WARN;   // v1.0.2: Look tokens
     private static final long AUTO_CLOSE_MS = 3000;
 
     private Store store;
@@ -140,58 +140,67 @@ public class PadActivity extends Activity implements PadView.Host {
         LinearLayout col = new LinearLayout(this);
         col.setOrientation(LinearLayout.VERTICAL);
         col.setBackgroundColor(BG);
-        col.setPadding(px(12), px(10), px(12), px(12));
+        col.setPadding(px(14), px(12), px(14), px(14));
 
         LinearLayout top = new LinearLayout(this);
         top.setGravity(Gravity.CENTER_VERTICAL);
-        top.setPadding(px(6), 0, 0, px(8));
-        dot = text("●", 16, MUTED, true);
+        top.setPadding(px(6), 0, 0, px(10));
+        dot = text("●", 11, MUTED, false);
         dot.setPadding(0, 0, px(10), 0);
         top.addView(dot);
         LinearLayout names = new LinearLayout(this);
         names.setOrientation(LinearLayout.VERTICAL);
-        title = text("", 18, TEXT, true);
+        title = text("", 17, TEXT, true);
         title.setSingleLine(true);
         names.addView(title);
         sub = text("", 13, MUTED, false);
         sub.setSingleLine(true);
+        sub.setPadding(0, px(2), 0, 0);
         names.addView(sub);
         top.addView(names, new LinearLayout.LayoutParams(0, -2, 1));
-        TextView close = text("✕", 22, MUTED, false);
-        close.setPadding(px(16), px(6), px(8), px(6));
+        android.widget.ImageView close = Look.icon(this, R.drawable.ic_close, MUTED);
+        close.setContentDescription("Close");
+        close.setPadding(px(12), px(12), px(12), px(12));
+        close.setBackground(Look.pressable(this, Look.round(this, 0x00000000, 24, 0, 0), 24));
+        close.setClickable(true);
         close.setOnClickListener(v -> finish());
-        top.addView(close);
+        top.addView(close, new LinearLayout.LayoutParams(px(48), px(48)));
         col.addView(top);
 
         pad = new PadView(this, this);
         col.addView(pad, new LinearLayout.LayoutParams(-1, 0, 1));
 
         LinearLayout keys = new LinearLayout(this);
-        keys.setPadding(0, px(10), 0, 0);
-        keys.addView(key("◀", "Back", v -> padEvent(PadProto.key("back"))));
-        keys.addView(key("⌂", "Home", v -> padEvent(PadProto.key("home"))));
-        keys.addView(key("☰", "Menu", v -> padEvent(PadProto.key("menu"))));
-        keys.addView(key("⏯", "Play", v -> padEvent(PadProto.key("pp"))));
-        keys.addView(key("⌨", "Type", v -> startActivity(new Intent(this, TypeActivity.class)
+        keys.setPadding(0, px(12), 0, 0);
+        keys.addView(key(R.drawable.ic_arrow_back, "Back", v -> padEvent(PadProto.key("back"))));
+        keys.addView(key(R.drawable.ic_home, "Home", v -> padEvent(PadProto.key("home"))));
+        keys.addView(key(R.drawable.ic_menu, "Menu", v -> padEvent(PadProto.key("menu"))));
+        keys.addView(key(R.drawable.ic_play_pause, "Play", v -> padEvent(PadProto.key("pp"))));
+        keys.addView(key(R.drawable.ic_keyboard, "Type", v -> startActivity(new Intent(this, TypeActivity.class)
                 .putExtra(TypeActivity.EXTRA_WANT, true))));
         col.addView(keys);
         setContentView(col);
     }
 
-    private TextView key(String icon, String label, View.OnClickListener l) {
-        TextView t = text(icon + "\n" + label, 13, TEXT, true);
+    /** v1.0.2: a key under the pad: a Material Symbols icon over its name, hairline at rest, ripple on touch. */
+    private LinearLayout key(int icon, String label, View.OnClickListener l) {
+        LinearLayout t = new LinearLayout(this);
+        t.setOrientation(LinearLayout.VERTICAL);
         t.setGravity(Gravity.CENTER);
-        t.setLineSpacing(0, 1.05f);
-        t.setPadding(0, px(9), 0, px(9));
-        GradientDrawable g = new GradientDrawable();
-        g.setColor(FIELD);
-        g.setCornerRadius(14 * d);
-        t.setBackground(g);
+        t.setPadding(0, px(10), 0, px(9));
+        t.setMinimumHeight(px(56));
+        t.setBackground(Look.pressable(this, Look.round(this, Look.CARD, Look.R_MD, Look.LINE, 1), Look.R_MD));
         t.setClickable(true);
+        t.setContentDescription(label);
         t.setHapticFeedbackEnabled(true);
+        t.addView(Look.icon(this, icon, TEXT), new LinearLayout.LayoutParams(px(22), px(22)));
+        TextView n = Look.text(this, label, 12, MUTED, 500);
+        n.setPadding(0, px(5), 0, 0);
+        n.setGravity(Gravity.CENTER);
+        t.addView(n);
         t.setOnClickListener(v -> { v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); l.onClick(v); });
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, -2, 1);
-        lp.setMargins(px(3), 0, px(3), 0);
+        lp.setMargins(px(4), 0, px(4), 0);
         t.setLayoutParams(lp);
         return t;
     }
@@ -201,7 +210,8 @@ public class PadActivity extends Activity implements PadView.Host {
         t.setText(s);
         t.setTextSize(TypedValue.COMPLEX_UNIT_SP, sp);
         t.setTextColor(color);
-        if (bold) t.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
+        Look.init(this);
+        t.setTypeface(bold ? Look.SEMIBOLD : Look.REGULAR);
         return t;
     }
 

@@ -42,9 +42,9 @@ cloud.
 
 Download the APKs from [Releases](../../releases/latest):
 
-- **On the TV:** `Saruki-Browser-v1.8.2.apk`. Sideload it with adb (`adb install -r Saruki-Browser-v1.8.2.apk`), or
+- **On the TV:** `Saruki-Browser-v1.8.4.apk`. Sideload it with adb (`adb install -r Saruki-Browser-v1.8.4.apk`), or
   with the Downloader app or a file manager on the TV.
-- **On the phone:** `Saruki-Remote-v1.0.1.apk` (Android 8 or newer), or install it straight from the TV's pairing page
+- **On the phone:** `Saruki-Remote-v1.0.2.apk` (Android 8 or newer), or install it straight from the TV's pairing page
   (see Pairing above).
 
 One TV APK works on 32-bit and 64-bit ARM TVs and streaming sticks (Android 8 or newer). App id:

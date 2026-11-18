@@ -1,5 +1,42 @@
 # Saruki TV Browser: changes
 
+## v1.8.4 (versionCode 15): phone swipes reach every row of a menu
+- **Fix:** with a menu open, swiping on Saruki Remote's trackpad only moved the highlight left and right, so the quick
+  menu's bottom row (and a tab's Close button) could only be reached with the TV remote. The phone's arrows are made
+  inside Saruki, and Android only moves the highlight by itself for real remote keys; rows that scroll sideways did it
+  on their own, which is why left and right worked. Saruki now moves the highlight itself for the phone's arrows, the
+  same way a remote arrow does, and only among the open panel's buttons (it never lands on Home behind the menu).
+- Everything else is as in 1.8.3. Saruki Remote stays 1.0.2.
+
+## v1.8.3 (versionCode 14): the "Window" look
+Saruki Remote goes to **1.0.2** with it. Same app ids and same key: installs over 1.8.2 and keeps everything. Only the
+look changes; every feature, setting and key works as before.
+1. **Saruki sits in a window.** A hairline frame 12dp in from the screen edge, rounded corners, black around it. It is
+   drawn over everything (it also rounds the page's corners) and never takes focus, keys or clicks. Full screen video
+   hides it; **Settings → Window frame** turns it off. Screen edge margin adds to it.
+2. **One quiet design system** (`Ui.java`): graphite surfaces, 12% white hairlines, radii 8 / 12 / 16, and Saruki pink
+   only for focus, values and progress. The focus look everywhere: a lighter card with a 2dp pink ring; tiles lift
+   less (about 5%).
+3. **Inter** (SIL OFL 1.1) in three weights replaces the system font; small all-caps section labels on Home; the clock
+   uses even-width digits.
+4. **Panels float inside the window:** the quick menu (rounded, above the bottom edge, a divider under its header),
+   side lists (on the right with a gap), tabs, the address panel and dialogs are opaque rounded panels with a hairline
+   edge. Calmer motion: shorter travel, 220ms.
+5. **Less noise at rest:** quick-menu tiles, favorites and suggestions have no box until focused; secondary buttons
+   (Home chips, Close, Done, New tab) are hairline outlines; neutral letter tiles for sites without an icon.
+6. **Top bar** is the window's title bar: chrome grey, a hairline under it, a 2dp progress line, 18dp icons and a
+   quieter address well.
+7. **No emoji in Saruki's own text** (toasts, menu status, call status, the page chip; "Not secure" replaces the
+   warning sign). The Play in TV Player button uses the play icon.
+8. The TV Player's options, toasts and the call bar use the same panels. The pairing and touchpad pages served to
+   phones use the same colours and type.
+
+**Saruki Remote 1.0.2 (versionCode 3):** the same system (`Look.java`, Inter). Header with the icon and
+"**THE** tv browser, on your phone"; sections TV, Pair, Permissions, Control, Settings and This phone; Trackpad, Type
+and Camera as three tiles; outlined secondary buttons with touch ripples; switches in pink with dividers; 48dp touch
+targets. The trackpad has a hairline edge and Material Symbols keys (Back, Home, Menu, Play, Type). Typing panel and
+camera prompt restyled to match.
+
 ## v1.8.2 (versionCode 13): safer buttons, clearer menus, real icons
 Saruki Remote goes to **1.0.1** with it (see the end of this entry). Same app ids and same key: installs over 1.8.1
 and keeps everything. Import, the pop-up shield, ad blocking, calls, the phone link, the TV Player and the icon and

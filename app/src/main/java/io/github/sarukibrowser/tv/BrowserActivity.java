@@ -66,6 +66,7 @@ public class BrowserActivity extends Activity implements PhoneServer.Commands, C
     FrameLayout root, webHolder, fsHolder, panelHost;
     CursorView cursor;
     View progress;
+    Ui.WindowFrame frame;   // v1.8.3
     TextView chip, pill, toastView;
     View home;
 
@@ -235,6 +236,10 @@ public class BrowserActivity extends Activity implements PhoneServer.Commands, C
     private void buildViews() {
         root = new FrameLayout(this);
         root.setBackgroundColor(Ui.BG);
+        // v1.8.3: Saruki sits in a window: a hairline frame a little in from the screen edge, rounded corners, black
+        // around it. The frame is the root's foreground; its inset is part of the root's padding (applyOverscan).
+        frame = new Ui.WindowFrame(root);
+        root.setForeground(frame);
         webHolder = new FrameLayout(this);
         barH = Ui.dp(TopBar.HEIGHT_DP);
         FrameLayout.LayoutParams wp = new FrameLayout.LayoutParams(-1, -1);
@@ -251,21 +256,27 @@ public class BrowserActivity extends Activity implements PhoneServer.Commands, C
         progress.setBackgroundColor(Ui.ACCENT);
         progress.setPivotX(0);
         progress.setScaleX(0);
-        FrameLayout.LayoutParams prp = new FrameLayout.LayoutParams(-1, Ui.dp(3), Gravity.TOP);
-        prp.topMargin = barH - Ui.dp(3);
+        FrameLayout.LayoutParams prp = new FrameLayout.LayoutParams(-1, Ui.dp(2), Gravity.TOP);   // v1.8.3: a 2dp line on the bar's edge
+        prp.topMargin = barH - Ui.dp(2);
         root.addView(progress, prp);
 
         chip = Ui.text(this, "", Ui.CAPTION, Ui.TEXT, false);
-        chip.setPadding(Ui.dp(14), Ui.dp(7), Ui.dp(14), Ui.dp(7));
-        chip.setBackground(Ui.round(0xE01B212B, 18, 0x33FF5CA8, 1));
+        chip.setPadding(Ui.dp(14), Ui.dp(8), Ui.dp(14), Ui.dp(8));
+        chip.setBackground(Ui.surface(Ui.R_SM));
         chip.setAlpha(0);
         FrameLayout.LayoutParams cp = new FrameLayout.LayoutParams(-2, -2, Gravity.TOP | Gravity.START);
         cp.setMargins(Ui.dp(16), barH + Ui.dp(12), 0, 0);
         root.addView(chip, cp);
 
-        pill = Ui.text(this, "▶  Play in TV Player", Ui.CAPTION, Ui.ON_ACCENT, true);
-        pill.setPadding(Ui.dp(16), Ui.dp(9), Ui.dp(16), Ui.dp(9));
-        pill.setBackground(Ui.round(Ui.ACCENT, 20, 0xFFFFFFFF, 1.5f));
+        pill = Ui.text(this, "Play in TV Player", Ui.CAPTION, Ui.ON_ACCENT, true);
+        pill.setPadding(Ui.dp(14), Ui.dp(9), Ui.dp(16), Ui.dp(9));
+        pill.setGravity(Gravity.CENTER_VERTICAL);
+        pill.setBackground(Ui.round(Ui.ACCENT, Ui.R_SM, 0, 0));
+        android.graphics.drawable.Drawable playIc = getDrawable(io.github.sarukibrowser.tv.R.drawable.ic_play_circle).mutate();
+        playIc.setBounds(0, 0, Ui.dp(18), Ui.dp(18));
+        playIc.setTint(Ui.ON_ACCENT);
+        pill.setCompoundDrawables(playIc, null, null, null);
+        pill.setCompoundDrawablePadding(Ui.dp(8));
         pill.setVisibility(View.GONE);
         pill.setOnClickListener(v -> playMedia());
         FrameLayout.LayoutParams pp = new FrameLayout.LayoutParams(-2, -2, Gravity.TOP | Gravity.END);
@@ -276,8 +287,9 @@ public class BrowserActivity extends Activity implements PhoneServer.Commands, C
         root.addView(cursor, CursorView.params(cursor.sizePx()));
 
         toastView = Ui.text(this, "", Ui.BODY, Ui.TEXT, false);
-        toastView.setPadding(Ui.dp(18), Ui.dp(11), Ui.dp(18), Ui.dp(11));
-        toastView.setBackground(Ui.round(0xEE1B212B, 22, 0x55FF5CA8, 1));
+        toastView.setPadding(Ui.dp(18), Ui.dp(12), Ui.dp(18), Ui.dp(12));
+        toastView.setBackground(Ui.surface(Ui.R_MD));
+        toastView.setLineSpacing(Ui.dp(3), 1);
         toastView.setAlpha(0);
         toastView.setMaxWidth(Ui.dp(640));
         FrameLayout.LayoutParams tp = new FrameLayout.LayoutParams(-2, -2, Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
@@ -290,10 +302,14 @@ public class BrowserActivity extends Activity implements PhoneServer.Commands, C
         root.post(() -> cursor.moveTo(cursor.areaW() / 2f, cursor.areaH() / 2f));
     }
 
+    /** The TV's edge margin (Settings) plus, v1.8.3, the window frame's gap (none while a video is full screen). */
     void applyOverscan() {
         int pct = Prefs.overscan();
         int w = getResources().getDisplayMetrics().widthPixels, hh = getResources().getDisplayMetrics().heightPixels;
-        root.setPadding(w * pct / 100, hh * pct / 100, w * pct / 100, hh * pct / 100);
+        boolean framed = Prefs.frame() && customView == null;
+        int gap = framed ? Ui.dp(Ui.FRAME_GAP) : 0;
+        if (frame != null) { frame.on = framed; frame.invalidateSelf(); }
+        root.setPadding(w * pct / 100 + gap, hh * pct / 100 + gap, w * pct / 100 + gap, hh * pct / 100 + gap);
     }
 
     void toast(String s) {
@@ -1185,6 +1201,7 @@ public class BrowserActivity extends Activity implements PhoneServer.Commands, C
         customCb = cb;
         fsHolder.addView(v, new FrameLayout.LayoutParams(-1, -1, Gravity.CENTER));
         fsHolder.setVisibility(View.VISIBLE);
+        applyOverscan();   // v1.8.3: full screen video uses the whole TV, no window frame
         cursor.showCursor(false);
         pill.setVisibility(View.GONE);
         setKeepOn(true);
@@ -1197,6 +1214,7 @@ public class BrowserActivity extends Activity implements PhoneServer.Commands, C
         fsHolder.removeView(customView);
         fsHolder.setVisibility(View.GONE);
         customView = null;
+        applyOverscan();   // v1.8.3: back in the window
         if (customCb != null) customCb.onCustomViewHidden();
         customCb = null;
         cursor.showCursor(true);
@@ -1267,9 +1285,9 @@ public class BrowserActivity extends Activity implements PhoneServer.Commands, C
         shieldCount++;
         if (d != Shield.BLOCK_AD) pendingPopup = url;
         // The first few times say what happened and how to undo it; after that keep it short.
-        if (shieldCount > 3) toast("🛡 Blocked a pop-up · " + shieldCount + " stopped on this site");
-        else if (d == Shield.BLOCK_AD) toast("🛡 Blocked an ad pop-up");
-        else toast("🛡 Blocked a pop-up to " + host + " · MENU to open it anyway");
+        if (shieldCount > 3) toast("Blocked a pop-up · " + shieldCount + " stopped on this site");
+        else if (d == Shield.BLOCK_AD) toast("Blocked an ad pop-up");
+        else toast("Blocked a pop-up to " + host + " · MENU to open it anyway");
         unjackAfterClick();
     }
 
@@ -1284,9 +1302,9 @@ public class BrowserActivity extends Activity implements PhoneServer.Commands, C
         if (d == Shield.ALLOW) return false;
         shieldCount++;
         if (d != Shield.BLOCK_AD) pendingRedirect = url;
-        if (shieldCount > 3) toast("🛡 Stopped a redirect · " + shieldCount + " stopped on this site");
-        else if (d == Shield.BLOCK_AD) toast("🛡 Blocked a redirect to an ad site");
-        else toast("🛡 Stopped a redirect to " + to + " · MENU to go there anyway");
+        if (shieldCount > 3) toast("Stopped a redirect · " + shieldCount + " stopped on this site");
+        else if (d == Shield.BLOCK_AD) toast("Blocked a redirect to an ad site");
+        else toast("Stopped a redirect to " + to + " · MENU to go there anyway");
         unjackAfterClick();
         return true;
     }
@@ -1295,7 +1313,7 @@ public class BrowserActivity extends Activity implements PhoneServer.Commands, C
     private void unjackAfterClick() {
         if (clickAge() > Shield.CLICK_WINDOW_MS || web == null) return;
         js("unjack(" + (int) cursor.x + "," + (int) py() + ")", r -> {
-            if ("1".equals(r)) toast("🛡 Removed an invisible ad layer · click again");
+            if ("1".equals(r)) toast("Removed an invisible ad layer · click again");
         });
     }
 
@@ -1479,8 +1497,25 @@ public class BrowserActivity extends Activity implements PhoneServer.Commands, C
 
     private void key(int code) {
         long t = SystemClock.uptimeMillis();
-        dispatchKeyEvent(new KeyEvent(t, t, KeyEvent.ACTION_DOWN, code, 0));
+        boolean used = dispatchKeyEvent(new KeyEvent(t, t, KeyEvent.ACTION_DOWN, code, 0));
         dispatchKeyEvent(new KeyEvent(t, t + 30, KeyEvent.ACTION_UP, code, 0));
+        // v1.8.4: a key made here skips the step where Android moves the highlight for arrows the screen didn't use
+        // (only real remote keys get it). Rows that scroll sideways moved it themselves, so the phone pad could go
+        // left and right in the quick menu but never down to the second row. Do that step here.
+        if (!used) moveFocus(code);
+    }
+
+    /** v1.8.4: moves the highlight to the next item in an arrow's direction, the way a real remote arrow does. */
+    private void moveFocus(int code) {
+        int dir = code == KeyEvent.KEYCODE_DPAD_UP ? View.FOCUS_UP : code == KeyEvent.KEYCODE_DPAD_DOWN ? View.FOCUS_DOWN
+                : code == KeyEvent.KEYCODE_DPAD_LEFT ? View.FOCUS_LEFT : code == KeyEvent.KEYCODE_DPAD_RIGHT ? View.FOCUS_RIGHT : 0;
+        if (dir == 0) return;
+        View f = getWindow().getDecorView().findFocus();
+        if (f == null) return;
+        // Look only inside the open panel, so the highlight never lands on Home or the page behind the menu.
+        ViewGroup scope = panels.isOpen() ? panelHost : (ViewGroup) getWindow().getDecorView();
+        View next = android.view.FocusFinder.getInstance().findNextFocus(scope, f, dir);
+        if (next != null && next != f) next.requestFocus(dir);
     }
 
     private void typeText(String s) {
@@ -1602,7 +1637,7 @@ public class BrowserActivity extends Activity implements PhoneServer.Commands, C
                 if (Prefs.blockPopups() && Shield.externalApp(Prefs.strictShield(), Prefs.popupsAllowed(curHost), req.hasGesture(), url,
                         clickedHref, clickAge()) != Shield.ALLOW) {
                     shieldCount++;
-                    toast("🛡 Stopped this page from opening another app");
+                    toast("Stopped this page from opening another app");
                     return true;
                 }
                 if (scheme.equals("intent")) {
@@ -1680,7 +1715,7 @@ public class BrowserActivity extends Activity implements PhoneServer.Commands, C
             String host = Prefs.host(url);
             boolean d = appliedDesktop != null && appliedDesktop;
             int z = Prefs.zoom(host, d);
-            String lock = url.startsWith("https") ? "🔒 " : "⚠ ";
+            String lock = url.startsWith("https") ? "" : "Not secure  ·  ";   // v1.8.3: the bar's lock icon already shows https
             showChip(lock + host + "  ·  " + (d ? "Desktop" : "Mobile") + " " + z + "%" + (tab.blockedCount > 0 ? "  ·  " + tab.blockedCount + " blocked" : ""));
             if (host.equals("accounts.google.com") && (url.contains("disallowed_useragent") || (t != null && t.toLowerCase(Locale.US).contains("couldn")))) panels.googleSignIn();
             panels.maybeSaveIcon(url);
@@ -1739,7 +1774,7 @@ public class BrowserActivity extends Activity implements PhoneServer.Commands, C
         // and a real question (OK / Cancel) opens as a Saruki panel you answer with the remote.
         @Override public boolean onJsAlert(WebView v, String url, String msg, android.webkit.JsResult r) {
             r.confirm();
-            if (v == web && msg != null && !msg.trim().isEmpty()) toast("💬 " + (msg.length() > 160 ? msg.substring(0, 160) + "…" : msg.trim()));
+            if (v == web && msg != null && !msg.trim().isEmpty()) toast("" + (msg.length() > 160 ? msg.substring(0, 160) + "…" : msg.trim()));
             return true;
         }
 

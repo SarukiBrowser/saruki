@@ -5,20 +5,27 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Saruki Remote</title>
 <style>
-  :root { color-scheme: dark; }
-  body { margin: 0; background: #0f0f14; color: #ececf1; font: 17px/1.45 system-ui, sans-serif; }
-  main { max-width: 460px; margin: 0 auto; padding: 28px 22px 40px; }
-  h1 { font-size: 28px; margin: 0 0 4px; letter-spacing: -0.5px; }
-  h1 b { color: #FF5CA8; }
-  .sub { color: #9a9aa8; margin: 0 0 24px; }
-  a.btn { display: block; text-align: center; text-decoration: none; font-weight: 700; padding: 16px; border-radius: 16px; margin: 12px 0; }
-  .main { background: #FF5CA8; color: #111; font-size: 19px; }
-  .alt { background: #23232d; color: #ececf1; }
-  .card { background: #1a1a22; border-radius: 18px; padding: 16px 18px; margin: 20px 0; }
-  .card h2 { font-size: 15px; color: #9a9aa8; font-weight: 600; margin: 0 0 8px; text-transform: uppercase; letter-spacing: .6px; }
-  .code { font: 700 30px ui-monospace, monospace; letter-spacing: 3px; color: #FF5CA8; }
-  .small { color: #9a9aa8; font-size: 14px; }
-  ol { padding-left: 20px; margin: 6px 0; } li { margin: 4px 0; }
+  /* v1.8.3: the "Window" look, matching Saruki on the TV and Saruki Remote */
+  :root { color-scheme: dark; --bg:#0B0C0E; --card:#131418; --field:#1B1D22; --line:rgba(255,255,255,.12); --line2:rgba(255,255,255,.2);
+          --text:#ECEDEF; --muted:#8E929B; --accent:#FF5CA8; --on-accent:#1A0610; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+         -webkit-font-smoothing: antialiased; }
+  main { max-width: 460px; margin: 0 auto; padding: 32px 20px 44px; }
+  h1 { font-size: 26px; font-weight: 600; margin: 0 0 4px; letter-spacing: -0.4px; }
+  h1 b { color: var(--accent); font-weight: 600; }
+  .sub { color: var(--muted); margin: 0 0 28px; font-size: 15px; }
+  a.btn { display: block; text-align: center; text-decoration: none; font-weight: 600; padding: 15px; border-radius: 14px; margin: 12px 0;
+          min-height: 48px; transition: opacity .15s ease; }
+  a.btn:active { opacity: .8; }
+  .main { background: var(--accent); color: var(--on-accent); font-size: 17px; }
+  .alt { background: transparent; color: var(--text); border: 1px solid var(--line2); }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 18px; margin: 24px 0; }
+  .card h2 { font-size: 12px; color: var(--muted); font-weight: 500; margin: 0 0 10px; text-transform: uppercase; letter-spacing: .08em; }
+  .code { font: 600 30px ui-monospace, "SF Mono", Menlo, monospace; letter-spacing: 4px; color: var(--text); padding: 6px 0 2px; }
+  .small { color: var(--muted); font-size: 14px; }
+  ol { padding-left: 20px; margin: 8px 0 0; } li { margin: 6px 0; }
+  li b { color: var(--text); font-weight: 600; }
 </style>
 </head>
 <body>

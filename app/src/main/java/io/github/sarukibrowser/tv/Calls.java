@@ -92,7 +92,7 @@ final class Calls {
         am = a.getSystemService(AudioManager.class);
         bar = Ui.text(a, "", Ui.CAPTION, Ui.TEXT, true);
         bar.setPadding(Ui.dp(16), Ui.dp(8), Ui.dp(16), Ui.dp(8));
-        bar.setBackground(Ui.round(0xF0251A1C, 20, 0x88FF6B5E, 1.5f));
+        bar.setBackground(Ui.round(0xF7181214, Ui.R_SM, 0x66FF6B5E, 1));   // v1.8.3: a quiet red hairline marks a live call
         bar.setAlpha(0);
         FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(-2, -2, Gravity.TOP | Gravity.END);
         lp.setMargins(0, a.barH + Ui.dp(12), Ui.dp(16), 0);
@@ -152,7 +152,7 @@ final class Calls {
                     refresh();
                     break;
                 case "nomic":
-                    a.toast("🎤 No microphone found · connect earbuds that support calls, or use the phone (Settings → Video calls)");
+                    a.toast("No microphone found · connect earbuds that support calls, or use the phone (Settings → Video calls)");
                     break;
                 default:
             }
@@ -188,7 +188,7 @@ final class Calls {
                 else video = usb > 0 ? "usb" : phone ? "phone" : "";
                 if (video.isEmpty()) {
                     reply(f, q, false, "", "", "NotFoundError", "No camera");
-                    a.toast("📷 No camera · open Saruki Remote on the phone, or plug the phone into the TV in Webcam mode");
+                    a.toast("No camera · open Saruki Remote on the phone, or plug the phone into the TV in Webcam mode");
                     return;
                 }
             }
@@ -211,7 +211,7 @@ final class Calls {
             withPerms(perms, () -> {
                 if (fv.equals("usb") && !granted(Manifest.permission.CAMERA)) {
                     reply(f, q, false, "", "", "NotAllowedError", "Saruki isn't allowed to use the camera");
-                    a.toast("📷 Saruki needs the camera permission (Android settings → Apps → Saruki → Permissions)");
+                    a.toast("Saruki needs the camera permission (Android settings → Apps → Saruki → Permissions)");
                     return;
                 }
                 String audio2 = fa;
@@ -251,7 +251,7 @@ final class Calls {
             else if (choice == 3) Prefs.setCallSite(host, "n");
             List<Runnable> l = waitingSite.remove(host);
             if (l != null) for (Runnable r : l) r.run();
-            if (choice == 3) a.toast("📷 Blocked for " + host + " · Settings → Video calls changes it");
+            if (choice == 3) a.toast("Blocked for " + host + " · Settings → Video calls changes it");
         });
     }
 
@@ -316,7 +316,7 @@ final class Calls {
         s.src = src;
         sessions.put(sid, s);
         if (!send(src, "o " + sid + " " + media + " " + facing)) { sessions.remove(sid); state(f, sid, "err", "No phone ready: open Saruki Remote on your phone"); return; }
-        a.toast("📱 Starting the phone " + (media.contains("v") ? "camera" : "microphone") + "…");
+        a.toast("Starting the phone " + (media.contains("v") ? "camera" : "microphone") + "…");
         refresh();
     }
 
@@ -350,7 +350,7 @@ final class Calls {
     void flipAll() {
         boolean any = false;
         for (Map.Entry<String, Session> e : sessions.entrySet()) if (e.getValue().media.contains("v")) { flip(e.getKey()); any = true; }
-        a.toast(any ? "🔄 Switching the phone camera" : "No phone camera in use");
+        a.toast(any ? "Switching the phone camera" : "No phone camera in use");
     }
 
     private void state(Frame f, String sid, String st, String msg) {
@@ -386,10 +386,10 @@ final class Calls {
                 if (p.length < 3) return;
                 String msg = p.length >= 4 ? unb64(p[3]) : "";
                 state(f, sid, p[2], msg);
-                if (p[2].equals("wait")) a.toast("📱 Answer on your phone: allow the camera for Saruki");
-                else if (p[2].equals("live")) a.toast("📱 Phone " + (s.media.contains("v") ? "camera" : "microphone") + " connected");
-                else if (p[2].equals("deny")) { a.toast("📱 " + (msg.isEmpty() ? "The phone said no" : msg)); sessions.remove(sid); refresh(); }
-                else if (p[2].equals("err")) { a.toast("📱 " + (msg.isEmpty() ? "The phone camera failed" : msg)); sessions.remove(sid); refresh(); }
+                if (p[2].equals("wait")) a.toast("Answer on your phone: allow the camera for Saruki");
+                else if (p[2].equals("live")) a.toast("Phone " + (s.media.contains("v") ? "camera" : "microphone") + " connected");
+                else if (p[2].equals("deny")) { a.toast("" + (msg.isEmpty() ? "The phone said no" : msg)); sessions.remove(sid); refresh(); }
+                else if (p[2].equals("err")) { a.toast("" + (msg.isEmpty() ? "The phone camera failed" : msg)); sessions.remove(sid); refresh(); }
                 break;
             }
             case "x":
@@ -412,14 +412,14 @@ final class Calls {
     void toggleMic() {
         micMuted = !micMuted;
         broadcast("mute", "on", micMuted);
-        a.toast(micMuted ? "🎤 Microphone off" : "🎤 Microphone on");
+        a.toast(micMuted ? "Microphone off" : "Microphone on");
         refresh();
     }
 
     void toggleCamera() {
         camOff = !camOff;
         broadcast("vid", "off", camOff);
-        a.toast(camOff ? "📷 Camera off" : "📷 Camera on");
+        a.toast(camOff ? "Camera off" : "Camera on");
         refresh();
     }
 
@@ -427,7 +427,7 @@ final class Calls {
         broadcast("hangup", "x", true);
         for (String sid : new ArrayList<>(sessions.keySet())) close(sid, true);
         frames.clear();
-        a.toast("📞 Call ended");
+        a.toast("Call ended");
         refresh();
         Tab t = a.cur;
         // closing the tab is what really leaves the call (the site's own connection ends with the page)
@@ -457,8 +457,8 @@ final class Calls {
     void refresh() {
         boolean on = active();
         if (on) {
-            String cam = camOff ? "📷 off" : "📷 " + (videoSrc.isEmpty() ? "–" : videoSrc);
-            String mic = micMuted ? "🎤 muted" : "🎤 " + (audioSrc.isEmpty() ? "–" : audioSrc);
+            String cam = camOff ? "Camera off" : "Camera " + (videoSrc.isEmpty() ? "–" : videoSrc);
+            String mic = micMuted ? "Mic muted" : "Mic " + (audioSrc.isEmpty() ? "–" : audioSrc);
             boolean anyV = false, anyA = false;
             for (Frame f : frames.values()) { anyV |= f.nv > 0; anyA |= f.na > 0; }
             bar.setText("● On a call   " + (anyV ? cam + "   " : "") + (anyA ? mic + "   " : "") + "⏯ mute · MENU");

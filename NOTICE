@@ -9,4 +9,5 @@ Saruki includes or uses the following third-party work:
 - ZXing core, QR codes (Apache License 2.0).
 - StevenBlack/hosts ad blocking list (MIT License; includes AdAway data under CC BY 3.0).
 - Archivo Black font (SIL Open Font License 1.1).
+- Inter font by The Inter Project Authors (SIL Open Font License 1.1, see INTER-OFL.txt), in the TV app and Saruki Remote.
 - Material Symbols icons by Google (Apache License 2.0), as vector drawables from the @material-symbols/svg-400 package.

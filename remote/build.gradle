@@ -8,8 +8,8 @@ android {
         applicationId 'io.github.sarukibrowser.remote'
         minSdk 26
         targetSdk 34
-        versionCode 2
-        versionName '1.0.1'
+        versionCode 3
+        versionName '1.0.2'
     }
     sourceSets { main { java.srcDirs += ['../shared/java'] } }
     // The key file and its password are never in this repository. The maintainer passes them as gradle properties:

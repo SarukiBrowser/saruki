@@ -95,10 +95,11 @@ final class Panels {
         v.animate().alpha(1).setDuration(170).setInterpolator(Ui.EASE).start();
         View content = v instanceof ViewGroup && ((ViewGroup) v).getChildCount() > 0 ? ((ViewGroup) v).getChildAt(0) : null;
         if (content != null) {
-            if (k.equals("menu")) content.setTranslationY(Ui.dp(48));
-            else if (k.equals("list")) content.setTranslationX(Ui.dp(70));
-            else { content.setScaleX(0.96f); content.setScaleY(0.96f); }
-            content.animate().translationX(0).translationY(0).scaleX(1).scaleY(1).setDuration(230).setInterpolator(Ui.EASE).start();
+            // v1.8.3: short, calm travel; everything settles in 220ms
+            if (k.equals("menu")) content.setTranslationY(Ui.dp(24));
+            else if (k.equals("list")) content.setTranslationX(Ui.dp(32));
+            else { content.setScaleX(0.98f); content.setScaleY(0.98f); }
+            content.animate().translationX(0).translationY(0).scaleX(1).scaleY(1).setDuration(220).setInterpolator(Ui.EASE).start();
         }
         if (focus != null) focus.post(focus::requestFocus);
     }
@@ -128,8 +129,8 @@ final class Panels {
         v.clearFocus();
         View content = v instanceof ViewGroup && ((ViewGroup) v).getChildCount() > 0 ? ((ViewGroup) v).getChildAt(0) : null;
         if (content != null) {
-            if (was.equals("menu")) content.animate().translationY(Ui.dp(30)).setDuration(140).start();
-            else if (was.equals("list")) content.animate().translationX(Ui.dp(40)).setDuration(140).start();
+            if (was.equals("menu")) content.animate().translationY(Ui.dp(16)).setDuration(140).start();
+            else if (was.equals("list")) content.animate().translationX(Ui.dp(24)).setDuration(140).start();
         }
         v.animate().alpha(0).setDuration(140).withEndAction(() -> { if (v.getParent() == a.panelHost) a.panelHost.removeView(v); }).start();
         if (zoomChanged) { zoomChanged = false; if (a.web != null) a.web.reload(); }
@@ -233,7 +234,7 @@ final class Panels {
         items.add(new Item("Allow", "Remembered for " + host, () -> { answered[0] = true; onDismiss = null; close(); c.chose(1); }));
         items.add(new Item("Allow this time", "Until you close this tab", () -> { answered[0] = true; onDismiss = null; close(); c.chose(2); }));
         items.add(new Item("Block", "This site can't ask again (Settings → Video calls changes it)", () -> { answered[0] = true; onDismiss = null; close(); c.chose(3); }));
-        list("📷 " + host + " wants the camera and microphone",
+        list(host + " wants the camera and microphone",
                 "For a video call. Saruki uses " + a.calls.devicesNow() + ". BACK = not now.", items);
         onDismiss = () -> { if (!answered[0]) { answered[0] = true; c.chose(0); } };
     }
@@ -245,10 +246,8 @@ final class Panels {
         Context c = a;
         LinearLayout sheet = new LinearLayout(c);
         sheet.setOrientation(LinearLayout.VERTICAL);
-        sheet.setPadding(Ui.dp(28), Ui.dp(18), Ui.dp(28), Ui.dp(18));
-        GradientDrawable bg = new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP, new int[]{0xFA0E1116, 0xF2161B23});
-        bg.setCornerRadii(new float[]{Ui.dp(26), Ui.dp(26), Ui.dp(26), Ui.dp(26), 0, 0, 0, 0});
-        sheet.setBackground(bg);
+        sheet.setPadding(Ui.dp(20), Ui.dp(18), Ui.dp(20), Ui.dp(12));
+        sheet.setBackground(Ui.surface(Ui.R_LG));   // v1.8.3: a floating panel inside the window
 
         boolean page = a.cur != null && a.cur.url != null && !BrowserActivity.HOME.equals(a.cur.url) && !a.homeShown();
         String host = page ? Prefs.host(a.cur.url) : "";
@@ -259,6 +258,7 @@ final class Panels {
         LinearLayout titles = new LinearLayout(c);
         titles.setOrientation(LinearLayout.VERTICAL);
         TextView t1 = Ui.text(c, page ? a.cur.title : "Saruki", Ui.BODY, Ui.TEXT, true);
+        t1.setPadding(0, 0, 0, Ui.dp(4));
         t1.setSingleLine(true);
         t1.setEllipsize(TextUtils.TruncateAt.END);
         TextView t2 = Ui.text(c, page ? a.cur.url : "Home", Ui.CAPTION, Ui.DIM, false);
@@ -268,9 +268,11 @@ final class Panels {
         titles.addView(t2);
         head.addView(titles, new LinearLayout.LayoutParams(0, -2, 1));
         TextView state = Ui.text(c, page ? (desk ? "Desktop " : "Mobile ") + Prefs.zoom(host, desk) + "%  ·  " + (Prefs.jumpMode() ? "Jump" : "Pointer")
-                + "  ·  🛡 " + shieldName(host) + (a.shieldCount > 0 ? " (" + a.shieldCount + " stopped)" : "") : "", Ui.CAPTION, Ui.ACCENT, false);
+                + "  ·  Shield " + shieldName(host) + (a.shieldCount > 0 ? " (" + a.shieldCount + " stopped)" : "") : "", Ui.CAPTION, Ui.ACCENT, false);
         head.addView(state);
+        head.setPadding(Ui.dp(8), 0, Ui.dp(8), Ui.dp(14));
         sheet.addView(head);
+        sheet.addView(Ui.divider(c));
 
         LinearLayout row1 = row(sheet), row2 = row(sheet);
         View first = null;
@@ -287,7 +289,7 @@ final class Panels {
         if (blocked && !Prefs.popupsAllowed(a.curHost)) {
             add(row1, R.drawable.ic_shield, "Allow pop-ups & redirects here", () -> {
                 Prefs.setPopupsAllowed(a.curHost, true);
-                a.toast("🛡 Shield off for " + a.curHost + " · Settings turns it back on");
+                a.toast("Shield off for " + a.curHost + " · Settings turns it back on");
                 close();
             });
         }
@@ -348,7 +350,10 @@ final class Panels {
         add(row2, R.drawable.ic_logout, "Leave Saruki", () -> { close(); a.moveTaskToBack(true); });
 
         FrameLayout wrap = new FrameLayout(c);
-        wrap.addView(sheet, new FrameLayout.LayoutParams(-1, -2, Gravity.BOTTOM));
+        wrap.setBackgroundColor(0x40000000);
+        FrameLayout.LayoutParams slp = new FrameLayout.LayoutParams(-1, -2, Gravity.BOTTOM);
+        slp.setMargins(Ui.dp(16), 0, Ui.dp(16), Ui.dp(16));
+        wrap.addView(sheet, slp);
         show(wrap, "menu", first);
     }
 
@@ -372,7 +377,7 @@ final class Panels {
     private LinearLayout row(LinearLayout parent) {
         HorizontalScrollView hs = Ui.hScroll(a, 56);   // room for the focus ring and to keep a focused tile clear of the cues
         LinearLayout r = new LinearLayout(a);
-        r.setPadding(Ui.dp(4), Ui.dp(8), Ui.dp(4), Ui.dp(4));
+        r.setPadding(Ui.dp(2), Ui.dp(6), Ui.dp(2), Ui.dp(2));
         r.setClipChildren(false);
         hs.addView(r);
         FrameLayout box = new FrameLayout(a);
@@ -408,10 +413,11 @@ final class Panels {
         Context c = a;
         LinearLayout card = new LinearLayout(c);
         card.setOrientation(LinearLayout.VERTICAL);
-        card.setPadding(Ui.dp(22), Ui.dp(18), Ui.dp(22), Ui.dp(18));
-        card.setBackground(Ui.round(Ui.PANEL, 22, 0x33FF5CA8, 1));
+        card.setPadding(Ui.dp(16), Ui.dp(16), Ui.dp(16), Ui.dp(12));
+        card.setBackground(Ui.surface(Ui.R_LG));
 
         EditText e = new EditText(c);
+        e.setTypeface(Ui.REGULAR);
         address = e;
         e.setSingleLine(true);
         e.setTextSize(Ui.TITLE);
@@ -420,8 +426,8 @@ final class Panels {
         e.setHint("Search or type a web address");
         e.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
         e.setImeOptions(EditorInfo.IME_ACTION_GO | EditorInfo.IME_FLAG_NO_EXTRACT_UI);
-        e.setPadding(Ui.dp(18), Ui.dp(12), Ui.dp(18), Ui.dp(12));
-        e.setBackground(Ui.focusBg(16));
+        e.setPadding(Ui.dp(16), Ui.dp(12), Ui.dp(16), Ui.dp(12));
+        e.setBackground(Ui.focusBg(Ui.R_MD));
         e.setSelectAllOnFocus(true);
         String pre = prefill == null || BrowserActivity.HOME.equals(prefill) ? "" : prefill;
         e.setText(pre);
@@ -432,7 +438,7 @@ final class Panels {
         LinearLayout chips = new LinearLayout(c);
         chips.setPadding(0, Ui.dp(10), 0, Ui.dp(4));
         chip(chips, "Go", () -> go(e.getText().toString()));
-        chip(chips, "Type on my phone", () -> { if (a.remote.phones() > 0) a.toast("📱 Type in Saruki Remote on your phone"); else remote(); });
+        chip(chips, "Type on my phone", () -> { if (a.remote.phones() > 0) a.toast("Type in Saruki Remote on your phone"); else remote(); });
         chip(chips, ".com", () -> { e.append(".com"); e.setSelection(e.length()); });
         chip(chips, "Clear", () -> e.setText(""));
         card.addView(chips);
@@ -460,7 +466,7 @@ final class Panels {
         fillSuggestions(list, pre.startsWith("http") ? "" : pre);
 
         FrameLayout wrap = new FrameLayout(c);
-        wrap.setBackgroundColor(0x99000000);
+        wrap.setBackgroundColor(Ui.SCRIM);
         FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(Ui.dp(760), -2, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
         lp.topMargin = Ui.dp(24);
         wrap.addView(card, lp);
@@ -504,8 +510,8 @@ final class Panels {
 
     private void chip(LinearLayout row, String label, Runnable r) {
         TextView t = Ui.text(a, label, Ui.CAPTION, Ui.TEXT, false);
-        t.setPadding(Ui.dp(16), Ui.dp(9), Ui.dp(16), Ui.dp(9));
-        Ui.focusable(t, 18, 1.06f);
+        t.setPadding(Ui.dp(14), Ui.dp(9), Ui.dp(14), Ui.dp(9));
+        Ui.outlined(t, Ui.R_SM);
         t.setOnClickListener(v -> r.run());
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(-2, -2);
         lp.leftMargin = Ui.dp(5);    // v1.7.1: even on both sides, so a centered row is truly centered
@@ -541,14 +547,15 @@ final class Panels {
     private void suggestionRow(LinearLayout list, String title, String sub, Runnable r) {
         LinearLayout row = new LinearLayout(a);
         row.setOrientation(LinearLayout.VERTICAL);
-        row.setPadding(Ui.dp(16), Ui.dp(9), Ui.dp(16), Ui.dp(9));
-        Ui.focusable(row, 12, 1f);   // v1.7.1: full-width row, ring inside, no growing past the list
+        row.setPadding(Ui.dp(14), Ui.dp(9), Ui.dp(14), Ui.dp(9));
+        Ui.focusable(row, Ui.R_MD, 1f, 0x00000000);   // v1.8.3: plain at rest, a card only when focused
         TextView t = Ui.text(a, title, Ui.BODY, Ui.TEXT, false);
         t.setSingleLine(true);
         t.setEllipsize(TextUtils.TruncateAt.END);
         TextView s = Ui.text(a, sub, Ui.CAPTION, Ui.DIM, false);
         s.setSingleLine(true);
         s.setEllipsize(TextUtils.TruncateAt.MIDDLE);
+        s.setPadding(0, Ui.dp(3), 0, 0);
         row.addView(t);
         row.addView(s);
         row.setOnClickListener(v -> r.run());
@@ -643,15 +650,19 @@ final class Panels {
         Context c = a;
         LinearLayout panel = new LinearLayout(c);
         panel.setOrientation(LinearLayout.VERTICAL);
-        panel.setPadding(Ui.dp(24), Ui.dp(24), Ui.dp(24), Ui.dp(16));
-        panel.setBackground(Ui.round(Ui.PANEL, 0, 0, 0));
+        panel.setPadding(Ui.dp(20), Ui.dp(22), Ui.dp(20), Ui.dp(16));
+        panel.setBackground(Ui.surface(Ui.R_LG));   // v1.8.3: floats inside the window
         TextView t = Ui.text(c, title, Ui.TITLE, Ui.TEXT, true);
         panel.addView(t);
         if (hint != null) {
             TextView hv = Ui.text(c, hint, Ui.CAPTION, Ui.DIM, false);
             hv.setPadding(0, Ui.dp(6), 0, 0);
+            hv.setLineSpacing(Ui.dp(3), 1);
             panel.addView(hv);
         }
+        LinearLayout.LayoutParams dlp = new LinearLayout.LayoutParams(-1, Math.max(1, Ui.dp(0.5f)));
+        dlp.topMargin = Ui.dp(16);
+        panel.addView(Ui.divider(c), dlp);
         ScrollView sv = Ui.vScroll(c, 8);
         sv.setClipToPadding(false);
         sv.setFocusable(false);   // v1.8.2: a list with only text rows must not give the invisible scroll area a focus stop
@@ -664,21 +675,22 @@ final class Panels {
         for (Item it : items) {
             LinearLayout row = new LinearLayout(c);
             row.setOrientation(LinearLayout.VERTICAL);
-            row.setPadding(Ui.dp(16), Ui.dp(11), Ui.dp(16), Ui.dp(11));
+            row.setPadding(Ui.dp(14), Ui.dp(12), Ui.dp(14), Ui.dp(12));
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(-1, -2);
-            lp.bottomMargin = Ui.dp(6);
+            lp.bottomMargin = Ui.dp(4);
             if (it.isInfo()) {
                 // v1.8.2: text only. No card, no pink ring, not focusable; the whole text shows (the list scrolls).
                 row.addView(Ui.text(c, it.title, Ui.BODY, Ui.TEXT, false));
                 if (it.sub != null) {
                     TextView st = Ui.text(c, it.sub, Ui.CAPTION, Ui.DIM, false);
-                    st.setPadding(0, Ui.dp(3), 0, 0);
+                    st.setPadding(0, Ui.dp(4), 0, 0);
+                    st.setLineSpacing(Ui.dp(3), 1);
                     row.addView(st);
                 }
                 col.addView(row, lp);
                 continue;
             }
-            Ui.focusable(row, 12, 1f);   // v1.7.1: full-width row, ring inside, no growing past the list
+            Ui.focusable(row, Ui.R_MD, 1f);   // v1.7.1: full-width row, ring inside, no growing past the list
             TextView tt = Ui.text(c, it.title, Ui.BODY, Ui.TEXT, false);
             tt.setMaxLines(2);
             tt.setEllipsize(TextUtils.TruncateAt.END);
@@ -688,7 +700,7 @@ final class Panels {
                 st = Ui.text(c, it.sub, Ui.CAPTION, it.toggle != null || it.accent ? Ui.ACCENT : Ui.DIM, false);
                 st.setMaxLines(3);
                 st.setEllipsize(TextUtils.TruncateAt.MIDDLE);
-                st.setPadding(0, Ui.dp(3), 0, 0);
+                st.setPadding(0, Ui.dp(4), 0, 0);
                 row.addView(st);
             }
             final TextView fst = st;
@@ -706,7 +718,7 @@ final class Panels {
             TextView fb = Ui.text(c, footerLabel, Ui.BODY, Ui.TEXT, true);
             fb.setGravity(Gravity.CENTER);
             fb.setPadding(Ui.dp(16), Ui.dp(12), Ui.dp(16), Ui.dp(12));
-            Ui.focusable(fb, 12, 1f);
+            Ui.outlined(fb, Ui.R_MD);
             fb.setOnClickListener(v -> { if (footerAction != null) footerAction.run(); });
             LinearLayout.LayoutParams fp = new LinearLayout.LayoutParams(-1, -2);
             fp.topMargin = Ui.dp(8);
@@ -717,7 +729,9 @@ final class Panels {
         View start = flagged != null ? flagged : first != null ? first : footer;
         FrameLayout wrap = new FrameLayout(c);
         wrap.setBackgroundColor(0x66000000);
-        wrap.addView(panel, new FrameLayout.LayoutParams(Ui.dp(480), -1, Gravity.END));
+        FrameLayout.LayoutParams plp = new FrameLayout.LayoutParams(Ui.dp(480), -1, Gravity.END);
+        plp.setMargins(0, Ui.dp(16), Ui.dp(16), Ui.dp(16));
+        wrap.addView(panel, plp);
         show(wrap, "list", start);
         listCol = col;
         listScroll = sv;
@@ -769,8 +783,8 @@ final class Panels {
         Context c = a;
         LinearLayout sheet = new LinearLayout(c);
         sheet.setOrientation(LinearLayout.VERTICAL);
-        sheet.setPadding(Ui.dp(32), Ui.dp(22), Ui.dp(32), Ui.dp(26));
-        sheet.setBackground(Ui.round(0xFA0E1116, 0, 0, 0));
+        sheet.setPadding(Ui.dp(28), Ui.dp(22), Ui.dp(28), Ui.dp(22));
+        sheet.setBackground(Ui.surface(Ui.R_LG));
         sheet.addView(Ui.text(c, "Tabs", Ui.TITLE, Ui.TEXT, true));
         TextView hint = Ui.text(c, "OK opens a tab · ▼ then OK closes it · only the open tab uses memory", Ui.CAPTION, Ui.DIM, false);
         hint.setPadding(0, Ui.dp(4), 0, Ui.dp(10));
@@ -786,9 +800,13 @@ final class Panels {
         LinearLayout nt = new LinearLayout(c);
         nt.setOrientation(LinearLayout.VERTICAL);
         nt.setGravity(Gravity.CENTER);
-        Ui.focusable(nt, 14, 1.06f);
-        nt.addView(Ui.text(c, "+", 40, Ui.ACCENT, false));
-        nt.addView(Ui.text(c, "New tab", Ui.CAPTION, Ui.TEXT, false));
+        Ui.outlined(nt, Ui.R_MD);
+        ImageView plus = Ui.icon(c, R.drawable.ic_new_window, 28, Ui.TEXT);
+        nt.addView(plus, new LinearLayout.LayoutParams(Ui.dp(28), Ui.dp(28)));
+        TextView ntl = Ui.text(c, "New tab", Ui.CAPTION, Ui.DIM, false);
+        ntl.setPadding(0, Ui.dp(10), 0, 0);
+        ntl.setGravity(Gravity.CENTER);
+        nt.addView(ntl);
         nt.setOnClickListener(v -> { close(); a.openTab(BrowserActivity.HOME, 0); });
         LinearLayout.LayoutParams ntp = new LinearLayout.LayoutParams(Ui.dp(150), Ui.dp(150));
         ntp.rightMargin = Ui.dp(14);
@@ -801,24 +819,34 @@ final class Panels {
             LinearLayout card = new LinearLayout(c);
             card.setOrientation(LinearLayout.VERTICAL);
             card.setPadding(Ui.dp(6), Ui.dp(6), Ui.dp(6), Ui.dp(8));
-            Ui.focusable(card, 14, 1.06f);
+            Ui.focusable(card, Ui.R_MD, 1.06f);
             ImageView iv = new ImageView(c);
             iv.setScaleType(ImageView.ScaleType.CENTER_CROP);
             Bitmap thumb = t == a.cur ? null : t.thumb;
             if (thumb != null) iv.setImageBitmap(thumb);
-            else { iv.setBackground(Ui.round(t == a.cur ? 0xFF2B3647 : 0xFF1B212B, 10, 0, 0)); }
+            else { iv.setBackground(Ui.round(t == a.cur ? 0xFF22252B : 0xFF15171B, Ui.R_SM, Ui.LINE, 1)); }
+            iv.setClipToOutline(true);
+            iv.setOutlineProvider(new android.view.ViewOutlineProvider() {
+                @Override public void getOutline(View v, android.graphics.Outline o) { o.setRoundRect(0, 0, v.getWidth(), v.getHeight(), Ui.dp(Ui.R_SM)); }
+            });
             card.addView(iv, new LinearLayout.LayoutParams(Ui.dp(208), Ui.dp(117)));
             boolean isHome = t.url == null || BrowserActivity.HOME.equals(t.url);
-            TextView tt = Ui.text(c, (t == a.cur ? "● " : "") + (isHome ? "Home" : t.title), Ui.CAPTION, Ui.TEXT, false);
+            TextView tt = Ui.text(c, (t == a.cur ? "● " : "") + (isHome ? "Home" : t.title), Ui.CAPTION, Ui.TEXT, t == a.cur);
             tt.setSingleLine(true);
             tt.setEllipsize(TextUtils.TruncateAt.END);
             tt.setPadding(Ui.dp(4), Ui.dp(6), Ui.dp(4), 0);
             card.addView(tt, new LinearLayout.LayoutParams(Ui.dp(208), -2));
             card.setOnClickListener(v -> { close(); a.activate(t); });
             col.addView(card);
-            TextView x = Ui.text(c, "✕  Close", Ui.CAPTION, Ui.DIM, false);
-            x.setPadding(Ui.dp(14), Ui.dp(6), Ui.dp(14), Ui.dp(6));
-            Ui.focusable(x, 14, 1.06f);
+            TextView x = Ui.text(c, "Close", Ui.CAPTION, Ui.DIM, false);
+            x.setPadding(Ui.dp(12), Ui.dp(7), Ui.dp(14), Ui.dp(7));
+            x.setGravity(Gravity.CENTER_VERTICAL);
+            android.graphics.drawable.Drawable xi = c.getDrawable(R.drawable.ic_close).mutate();
+            xi.setBounds(0, 0, Ui.dp(14), Ui.dp(14));
+            xi.setTint(Ui.DIM);
+            x.setCompoundDrawables(xi, null, null, null);
+            x.setCompoundDrawablePadding(Ui.dp(6));
+            Ui.outlined(x, Ui.R_SM);
             x.setOnClickListener(v -> {
                 // v1.8.2: focus stays on a Close button: the tab that took this one's place (the next, or the previous
                 // when this was the last), or the New tab card when none is left, so OK can close tab after tab.
@@ -842,8 +870,10 @@ final class Panels {
         if (focusCloseOf != 0) focus = closeFocus != null ? closeFocus : nt;   // after a Close
         else if (focus == null) focus = nt;
         FrameLayout wrap = new FrameLayout(c);
-        wrap.setBackgroundColor(0x88000000);
-        wrap.addView(sheet, new FrameLayout.LayoutParams(-1, -2, Gravity.CENTER_VERTICAL));
+        wrap.setBackgroundColor(Ui.SCRIM);
+        FrameLayout.LayoutParams shp = new FrameLayout.LayoutParams(-1, -2, Gravity.CENTER_VERTICAL);
+        shp.setMargins(Ui.dp(16), 0, Ui.dp(16), 0);
+        wrap.addView(sheet, shp);
         View f = focus;
         show(wrap, "tabs", f);
         f.post(() -> hs.smoothScrollTo(Math.max(0, f.getLeft() + ((View) f.getParent()).getLeft() - Ui.dp(200)), 0));
@@ -1000,6 +1030,8 @@ final class Panels {
                 "Leaves a border so a TV that cuts off its edges shows everything",
                 new String[]{"0%", "1%", "2%", "3%", "4%", "5%"}, null, Prefs.overscan(),
                 i -> { Prefs.setOverscan(i); a.applyOverscan(); }, () -> settings(rEdge))));
+        s.add(Item.setting("Window frame", () -> onOff(Prefs.frame()) + " · a thin border around the screen", () -> {   // v1.8.3
+            Prefs.setFlag("frame", !Prefs.frame()); a.applyOverscan(); return onOff(Prefs.frame()) + " · a thin border around the screen"; }));
         s.add(new Item("Saruki Remote (phone app)", a.remote.phones() == 0 ? "Trackpad, keyboard and camera on your phone · no phone connected"
                 : "Trackpad, keyboard and camera on your phone · " + a.remote.phones() + " connected", this::remoteSettings));
         s.add(new Item("Video calls", a.calls.devicesNow(), () -> callSettings(-1)));
@@ -1024,6 +1056,7 @@ final class Panels {
         l.add(new Item("Video player", "AndroidX Media3 (Apache 2.0) with NextLib FFmpeg decoders (GPL-3.0)", null));
         l.add(new Item("QR codes", "ZXing (Apache 2.0)", null));
         l.add(new Item("Icons", "Material Symbols (Apache 2.0)", null));
+        l.add(new Item("Type", "Inter (SIL Open Font License 1.1)", null));
         l.add(new Item("Phone link", "Trackpad, typing and camera protocols adapted from TV Overlay Suite (MIT)", null));
         l.add(new Item("Tip: update the browser engine", "Play Store → Manage apps → update Android System WebView to make every page faster.", null));
         return l;
@@ -1063,7 +1096,7 @@ final class Panels {
             boolean ok = "y".equals(Prefs.callSite(host));
             l.add(new Item(host, (ok ? "Allowed" : "Blocked") + " · OK forgets (the site asks again)", () -> {
                 Prefs.setCallSite(host, null);
-                a.toast("📷 " + host + " will ask again");
+                a.toast("" + host + " will ask again");
                 callSettings();
             }));
         }
@@ -1152,7 +1185,7 @@ final class Panels {
 
     private String phonesText() {
         int n = a.remote.phones();
-        return n == 0 ? "Waiting for your phone…" : n == 1 ? "Phone connected ✓" : n + " phones connected ✓";
+        return n == 0 ? "Waiting for your phone…" : n == 1 ? "Phone connected" : n + " phones connected";
     }
 
     /** The no-app phone page (Chrome on the phone, from the QR code). */
@@ -1161,7 +1194,7 @@ final class Panels {
         String url = a.phone.url();
         if (url == null) { a.toast("The TV isn't on a network right now"); return; }
         qr("Control Saruki from your phone (no app)", url, "1. Phone on the same Wi-Fi as the TV\n2. Scan with the phone's camera\n3. Use the touchpad, or type into boxes on the page");
-        if (phoneStatus != null) phoneStatus.setText(System.currentTimeMillis() - a.phone.lastSeen < 60000 ? "Phone connected ✓" : "Waiting for your phone…");
+        if (phoneStatus != null) phoneStatus.setText(System.currentTimeMillis() - a.phone.lastSeen < 60000 ? "Phone connected" : "Waiting for your phone…");
     }
 
     /** Saruki Remote settings: phones, pairing code. */
@@ -1172,7 +1205,7 @@ final class Panels {
         l.add(new Item("New pairing code", "Disconnects every phone; each one pairs again with the new QR code", () -> confirmAction(
                 "Make a new pairing code?", "Every phone disconnects and has to scan the new QR code.", "Yes, make a new code", () -> {
                     a.remote.newCode();
-                    a.toast("📱 New pairing code: " + io.github.sarukibrowser.link.Pairing.pretty(a.remote.code()));
+                    a.toast("New pairing code: " + io.github.sarukibrowser.link.Pairing.pretty(a.remote.code()));
                     close();
                     remote();
                 }, this::remoteSettings)));
@@ -1185,7 +1218,7 @@ final class Panels {
     void remoteChanged(boolean connected) {
         if (phoneStatus != null && "qr".equals(kind)) {
             phoneStatus.setText(phonesText());
-            phoneStatus.setTextColor(a.remote.phones() > 0 ? 0xFF66BB6A : Ui.GOLD);
+            phoneStatus.setTextColor(a.remote.phones() > 0 ? Ui.GOOD : Ui.GOLD);
             if (connected) a.h.postDelayed(() -> { if (phoneStatus != null) close(); }, 1400);
         }
         // otherwise silent: the phone reconnects by itself every time its screen comes on
@@ -1193,8 +1226,8 @@ final class Panels {
 
     void phoneConnected() {
         if (phoneStatus != null) {
-            phoneStatus.setText("Phone connected ✓");
-            phoneStatus.setTextColor(0xFF66BB6A);
+            phoneStatus.setText("Phone connected");
+            phoneStatus.setTextColor(Ui.GOOD);
             a.h.postDelayed(() -> { if (phoneStatus != null) close(); }, 1400);
         } else a.toast("Phone connected");
     }
@@ -1206,12 +1239,12 @@ final class Panels {
         LinearLayout card = new LinearLayout(c);
         card.setOrientation(LinearLayout.HORIZONTAL);
         card.setGravity(Gravity.CENTER_VERTICAL);
-        card.setPadding(Ui.dp(28), Ui.dp(28), Ui.dp(34), Ui.dp(28));
-        card.setBackground(Ui.round(Ui.PANEL, 24, 0x33FF5CA8, 1));
+        card.setPadding(Ui.dp(24), Ui.dp(24), Ui.dp(30), Ui.dp(24));
+        card.setBackground(Ui.surface(Ui.R_LG));
         ImageView iv = new ImageView(c);
         iv.setImageBitmap(qrBitmap(text, Ui.dp(240)));
-        iv.setBackgroundColor(Color.WHITE);
-        iv.setPadding(Ui.dp(10), Ui.dp(10), Ui.dp(10), Ui.dp(10));
+        iv.setBackground(Ui.round(Color.WHITE, Ui.R_MD, 0, 0));
+        iv.setPadding(Ui.dp(14), Ui.dp(14), Ui.dp(14), Ui.dp(14));
         card.addView(iv, new LinearLayout.LayoutParams(Ui.dp(260), Ui.dp(260)));
         LinearLayout col = new LinearLayout(c);
         col.setOrientation(LinearLayout.VERTICAL);
@@ -1228,16 +1261,16 @@ final class Panels {
         phoneStatus = Ui.text(c, "", Ui.BODY, Ui.GOLD, true);
         phoneStatus.setPadding(0, Ui.dp(14), 0, Ui.dp(14));
         col.addView(phoneStatus);
-        TextView done = Ui.text(c, "Done", Ui.BODY, Ui.TEXT, false);
+        TextView done = Ui.text(c, "Done", Ui.BODY, Ui.TEXT, true);
         done.setPadding(Ui.dp(22), Ui.dp(10), Ui.dp(22), Ui.dp(10));
-        Ui.focusable(done, 18, 1.06f);
+        Ui.outlined(done, Ui.R_MD);
         done.setOnClickListener(v -> close());
         if (extra != null) {
             LinearLayout btns = new LinearLayout(c);
             btns.addView(done, new LinearLayout.LayoutParams(-2, -2));
             TextView more = Ui.text(c, extraLabel, Ui.BODY, Ui.DIM, false);
             more.setPadding(Ui.dp(22), Ui.dp(10), Ui.dp(22), Ui.dp(10));
-            Ui.focusable(more, 18, 1.06f);
+            Ui.outlined(more, Ui.R_MD);
             more.setOnClickListener(v -> { close(); extra.run(); });
             LinearLayout.LayoutParams mlp = new LinearLayout.LayoutParams(-2, -2);
             mlp.leftMargin = Ui.dp(10);
@@ -1248,7 +1281,7 @@ final class Panels {
         }
         card.addView(col, new LinearLayout.LayoutParams(Ui.dp(400), -2));
         FrameLayout wrap = new FrameLayout(c);
-        wrap.setBackgroundColor(0xAA000000);
+        wrap.setBackgroundColor(Ui.SCRIM);
         wrap.addView(card, new FrameLayout.LayoutParams(-2, -2, Gravity.CENTER));
         show(wrap, "qr", done);
     }
@@ -1290,14 +1323,13 @@ final class Panels {
     View buildHome() {
         Context c = a;
         FrameLayout root = new FrameLayout(c);
-        GradientDrawable bg = new GradientDrawable(GradientDrawable.Orientation.TL_BR, new int[]{0xFF101826, 0xFF0B0E13, 0xFF0E1116});
-        root.setBackground(bg);
+        root.setBackgroundColor(Ui.BG);   // v1.8.3: one flat graphite, no gradient
         ScrollView sv = Ui.vScroll(c, 24);
         sv.setClipChildren(false);
         sv.setTag("homeScroll");
         LinearLayout col = new LinearLayout(c);
         col.setOrientation(LinearLayout.VERTICAL);
-        col.setPadding(Ui.dp(56), Ui.dp(30), Ui.dp(56), Ui.dp(30));
+        col.setPadding(Ui.dp(64), Ui.dp(36), Ui.dp(64), Ui.dp(36));
         col.setClipChildren(false);
         sv.addView(col);
         root.addView(sv, new FrameLayout.LayoutParams(-1, -1));
@@ -1310,7 +1342,7 @@ final class Panels {
         ImageView mark = new ImageView(c);
         mark.setImageResource(R.drawable.saruki_mark);
         mark.setAdjustViewBounds(true);
-        logo.addView(mark, new LinearLayout.LayoutParams(-2, Ui.dp(38)));
+        logo.addView(mark, new LinearLayout.LayoutParams(-2, Ui.dp(34)));
         TextView word = Ui.text(c, "saruki", Ui.DISPLAY, Ui.TEXT, false);
         try { word.setTypeface(c.getResources().getFont(R.font.archivo_black)); } catch (RuntimeException ignored) { }
         word.setIncludeFontPadding(false);
@@ -1318,6 +1350,7 @@ final class Panels {
         logo.addView(word);
         top.addView(logo, new LinearLayout.LayoutParams(0, -2, 1));
         TextView clock = Ui.text(c, new SimpleDateFormat("h:mm a", Locale.US).format(new Date()), Ui.TITLE, Ui.DIM, false);
+        clock.setFontFeatureSettings("tnum");   // digits that don't shift as the minutes change
         top.addView(clock);
         clock.postDelayed(new Runnable() {     // keep the clock right while Home stays open
             @Override public void run() {
@@ -1330,26 +1363,28 @@ final class Panels {
 
         LinearLayout bar = new LinearLayout(c);
         bar.setGravity(Gravity.CENTER_VERTICAL);
-        bar.setPadding(Ui.dp(26), 0, Ui.dp(26), 0);
+        bar.setPadding(Ui.dp(20), 0, Ui.dp(20), 0);
         bar.setFocusable(true);
         bar.setClickable(true);
         android.graphics.drawable.StateListDrawable sl = new android.graphics.drawable.StateListDrawable();
-        sl.addState(new int[]{android.R.attr.state_focused}, Ui.round(0xFF2B3647, 32, Ui.ACCENT, 3));
-        sl.addState(new int[]{}, Ui.round(0xFF1E2531, 32, 0x33FF5CA8, 1));
+        sl.addState(new int[]{android.R.attr.state_focused}, Ui.round(Ui.CARD_FOCUS, Ui.R_LG, Ui.ACCENT, Ui.RING));
+        sl.addState(new int[]{}, Ui.round(Ui.CARD, Ui.R_LG, Ui.LINE, 1));
+        sl.setEnterFadeDuration(90);
+        sl.setExitFadeDuration(120);
         bar.setBackground(sl);
         // v1.7.1: the bar no longer grows on focus. It is as wide as the screen, so growing pushed its rounded ends
         // past the edge of what can be drawn and they were cut flat. The pink ring is drawn inside the bar instead.
         ImageView si = new ImageView(c);
         si.setImageResource(R.drawable.ic_search);
         si.setColorFilter(Ui.DIM);
-        bar.addView(si, new LinearLayout.LayoutParams(Ui.dp(28), Ui.dp(28)));
+        bar.addView(si, new LinearLayout.LayoutParams(Ui.dp(24), Ui.dp(24)));
         TextView bt = Ui.text(c, "Search or type a web address", Ui.TITLE, Ui.DIM, false);
         bt.setPadding(Ui.dp(14), 0, 0, 0);
         bar.addView(bt, new LinearLayout.LayoutParams(0, -2, 1));
         bar.addView(Ui.text(c, "OK to type", Ui.CAPTION, Ui.DIM, false));
         bar.setOnClickListener(v -> address(""));
-        LinearLayout.LayoutParams bp = new LinearLayout.LayoutParams(-1, Ui.dp(62));
-        bp.topMargin = Ui.dp(22);
+        LinearLayout.LayoutParams bp = new LinearLayout.LayoutParams(-1, Ui.dp(60));
+        bp.topMargin = Ui.dp(28);
         col.addView(bar, bp);
         bar.setId(View.generateViewId());
         bar.setTag("focus");
@@ -1357,9 +1392,9 @@ final class Panels {
         // v1.7.1: everything below the search bar is centered on the screen. The chips row, the Favorites block and
         // the Continue block are each centered; the labels sit on the left edge of their own block.
         LinearLayout chips = new LinearLayout(c);
-        chips.setPadding(0, Ui.dp(16), 0, Ui.dp(6));
+        chips.setPadding(0, Ui.dp(18), 0, Ui.dp(10));
         chips.setClipChildren(false);
-        chip(chips, "📱  Phone remote & keyboard", this::remote);
+        chip(chips, "Phone remote & keyboard", this::remote);
         View firstChip = chips.getChildAt(0);
         firstChip.setId(View.generateViewId());
         bar.setNextFocusDownId(firstChip.getId());
@@ -1372,8 +1407,8 @@ final class Panels {
         col.addView(chips, centered());
 
         LinearLayout favBlock = block(c);
-        TextView fl = Ui.text(c, "Favorites", Ui.BODY, Ui.DIM, true);
-        fl.setPadding(Ui.dp(8), Ui.dp(14), 0, Ui.dp(4));
+        TextView fl = Ui.label(c, "Favorites");
+        fl.setPadding(Ui.dp(10), Ui.dp(22), 0, Ui.dp(8));
         favBlock.addView(fl);
         GridLayout grid = new GridLayout(c);
         grid.setColumnCount(6);
@@ -1387,8 +1422,8 @@ final class Panels {
         for (Tab t : a.tabs) if (t.url != null && !BrowserActivity.HOME.equals(t.url)) open.add(t);
         if (!open.isEmpty()) {
             LinearLayout contBlock = block(c);
-            TextView ol = Ui.text(c, "Continue", Ui.BODY, Ui.DIM, true);
-            ol.setPadding(Ui.dp(8), Ui.dp(16), 0, Ui.dp(4));
+            TextView ol = Ui.label(c, "Continue");
+            ol.setPadding(Ui.dp(10), Ui.dp(22), 0, Ui.dp(8));
             contBlock.addView(ol);
             LinearLayout r = new LinearLayout(c);
             r.setClipChildren(false);
@@ -1396,13 +1431,14 @@ final class Panels {
                 Tab t = open.get(i);
                 LinearLayout card = new LinearLayout(c);
                 card.setOrientation(LinearLayout.VERTICAL);
-                card.setPadding(Ui.dp(14), Ui.dp(10), Ui.dp(14), Ui.dp(10));
-                Ui.focusable(card, 14, 1.06f);
+                card.setPadding(Ui.dp(14), Ui.dp(12), Ui.dp(14), Ui.dp(12));
+                Ui.focusable(card, Ui.R_MD, 1.06f);
                 TextView tt = Ui.text(c, t.title, Ui.CAPTION, Ui.TEXT, false);
                 tt.setSingleLine(true);
                 tt.setEllipsize(TextUtils.TruncateAt.END);
                 TextView th = Ui.text(c, Prefs.host(t.url), Ui.CAPTION, Ui.DIM, false);
                 th.setSingleLine(true);
+                th.setPadding(0, Ui.dp(4), 0, 0);
                 card.addView(tt);
                 card.addView(th);
                 card.setOnClickListener(v -> { a.activate(t); if (t == a.cur) a.hideHome(); });
@@ -1478,27 +1514,33 @@ final class Panels {
         LinearLayout t = new LinearLayout(c);
         t.setOrientation(LinearLayout.VERTICAL);
         t.setGravity(Gravity.CENTER);
-        t.setPadding(Ui.dp(6), Ui.dp(10), Ui.dp(6), Ui.dp(8));
-        Ui.focusable(t, 16, 1.1f);
+        t.setPadding(Ui.dp(6), Ui.dp(12), Ui.dp(6), Ui.dp(10));
+        Ui.focusable(t, Ui.R_MD, 1.1f, 0x00000000);   // v1.8.3: just the icon and name until focused
         String host = Prefs.host(en.url);
         FrameLayout iconBox = new FrameLayout(c);
         ImageView iv = new ImageView(c);
         iv.setScaleType(ImageView.ScaleType.FIT_CENTER);
         Bitmap b = loadIcon(host);
-        TextView letter = Ui.text(c, host.isEmpty() ? "?" : host.substring(0, 1).toUpperCase(Locale.US), 24, Color.WHITE, true);
+        TextView letter = Ui.text(c, host.isEmpty() ? "?" : host.substring(0, 1).toUpperCase(Locale.US), 22, Ui.TEXT, true);
         letter.setGravity(Gravity.CENTER);
         if (b != null) { iv.setImageBitmap(b); letter.setVisibility(View.GONE); }
         else letter.setBackground(Ui.letterBg(host));
         iconBox.addView(letter, new FrameLayout.LayoutParams(-1, -1));
         iconBox.addView(iv, new FrameLayout.LayoutParams(-1, -1));
         iconBox.setTag(host);
+        iconBox.setClipToOutline(true);
+        iconBox.setOutlineProvider(new android.view.ViewOutlineProvider() {
+            @Override public void getOutline(View v, android.graphics.Outline o) { o.setRoundRect(0, 0, v.getWidth(), v.getHeight(), Ui.dp(Ui.R_MD)); }
+        });
         t.addView(iconBox, new LinearLayout.LayoutParams(Ui.dp(52), Ui.dp(52)));
-        TextView l = Ui.text(c, en.title, Ui.CAPTION, Ui.TEXT, false);
+        TextView l = Ui.text(c, en.title, Ui.CAPTION, Ui.DIM, false);
         l.setSingleLine(true);
         l.setEllipsize(TextUtils.TruncateAt.END);
         l.setGravity(Gravity.CENTER);
-        l.setPadding(0, Ui.dp(8), 0, 0);
+        l.setPadding(0, Ui.dp(10), 0, 0);
         t.addView(l, new LinearLayout.LayoutParams(-1, -2));
+        View.OnFocusChangeListener lift = t.getOnFocusChangeListener();
+        t.setOnFocusChangeListener((v, has) -> { l.setTextColor(has ? Ui.TEXT : Ui.DIM); if (lift != null) lift.onFocusChange(v, has); });
         t.setOnClickListener(v -> a.navigate(en.url));
         t.setOnLongClickListener(v -> {
             List<Item> items = new ArrayList<>();

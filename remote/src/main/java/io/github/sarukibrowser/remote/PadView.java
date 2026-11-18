@@ -64,7 +64,8 @@ final class PadView extends View {
     private long flingLastNs;
     private boolean flinging;
 
-    private final Paint bg = new Paint(Paint.ANTI_ALIAS_FLAG), dot = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint bg = new Paint(Paint.ANTI_ALIAS_FLAG), dot = new Paint(Paint.ANTI_ALIAS_FLAG),
+            edge = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final TextPaint hintPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
     private final RectF box = new RectF();
     private StaticLayout hint;
@@ -77,10 +78,16 @@ final class PadView extends View {
         this.host = host;
         d = c.getResources().getDisplayMetrics().density;
         slop = 9 * d;
-        bg.setColor(0xFF1B202A);
-        dot.setColor(0x40FF5CA8);
-        hintPaint.setColor(0xFF6E7787);
-        hintPaint.setTextSize(15 * c.getResources().getDisplayMetrics().scaledDensity);
+        // v1.0.2: the "Window" look: graphite pad, hairline edge, quiet Inter hint, soft pink touch points
+        Look.init(c);
+        bg.setColor(Look.CARD);
+        edge.setColor(Look.LINE);
+        edge.setStyle(android.graphics.Paint.Style.STROKE);
+        edge.setStrokeWidth(Math.max(1, d));
+        dot.setColor(0x33FF5CA8);
+        hintPaint.setColor(Look.MUTED);
+        hintPaint.setTypeface(Look.REGULAR);
+        hintPaint.setTextSize(14 * c.getResources().getDisplayMetrics().scaledDensity);
         setHapticFeedbackEnabled(true);
         setHint("Slide to move  ·  tap to click\n\nTwo fingers to scroll\nTwo-finger tap or hold still for the menu\nTap, then touch again and slide to drag");
     }
@@ -318,11 +325,13 @@ final class PadView extends View {
     @Override
     protected void onDraw(Canvas c) {
         box.set(0, 0, getWidth(), getHeight());
-        c.drawRoundRect(box, 26 * d, 26 * d, bg);
+        c.drawRoundRect(box, Look.R_LG * d, Look.R_LG * d, bg);
+        box.inset(d / 2f, d / 2f);
+        c.drawRoundRect(box, Look.R_LG * d, Look.R_LG * d, edge);
         if (fingers == 0) {
             if (hint == null || hint.getWidth() != getWidth() - Math.round(48 * d)) {
                 int w = Math.max(1, getWidth() - Math.round(48 * d));
-                hint = new StaticLayout(hintText, hintPaint, w, Layout.Alignment.ALIGN_CENTER, 1.15f, 0, false);
+                hint = new StaticLayout(hintText, hintPaint, w, Layout.Alignment.ALIGN_CENTER, 1.3f, 0, false);
             }
             c.save();
             c.translate(24 * d, (getHeight() - hint.getHeight()) / 2f);
